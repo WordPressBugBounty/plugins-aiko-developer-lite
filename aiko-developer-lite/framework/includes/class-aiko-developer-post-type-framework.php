@@ -244,6 +244,9 @@ class Aiko_Developer_Post_Type_Framework {
 		if ( ! in_array( '_functional_requirements', $revisioned_keys, true ) ) {
 			$revisioned_keys[] = '_functional_requirements';
 		}
+		if ( ! in_array( '_old_functional_requirements', $revisioned_keys, true ) ) {
+			$revisioned_keys[] = '_old_functional_requirements';
+		}
 		return $revisioned_keys;
 	}
 

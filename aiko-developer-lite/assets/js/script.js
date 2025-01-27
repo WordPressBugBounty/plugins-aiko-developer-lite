@@ -69,6 +69,26 @@ jQuery( document ).ready( function( $ ) { "use strict";
 	aiko_developer_show_notices_after_refresh();
 	aiko_developer_code_not_generated();
 
+	function format_text( input ) {
+		let formatted = input.replace( /\*\*(.*?)\*\*/g, "<b>$1</b>" );
+		
+		formatted = formatted.replace( /(?:^|\n)\s*-/g, "\n&emsp;-" );
+		
+		formatted = formatted.replace( /(?<!^)\n/g, "<br>" );
+		
+		return formatted;
+	}
+
+	function revert_text(formatted) {
+		let reverted = formatted.replace(/<b>(.*?)<\/b>/g, "**$1**");
+		
+		reverted = reverted.replace(/&emsp;-/g, "   -");
+		
+		reverted = reverted.replace(/<br>/g, "\n");
+		
+		return reverted;
+	}
+
 	// Title enter bug
 	$( '#title' ).on( 'keypress', function( e ) {
 		if ( e.which === 13 ) {
@@ -155,8 +175,20 @@ jQuery( document ).ready( function( $ ) { "use strict";
 			event.preventDefault();
 			return;
 		} else {
-			$( '#aiko-developer-loader-overlay' ).fadeIn();
+			if ( $( '#aiko-developer-after-title' ).attr( 'data-rephrased-flag' ) === '1' ) {
+				$( '#aiko-developer-publish-confirm-popup-overlay' ).fadeIn();
+				event.preventDefault();
+			} else {
+				$( '#aiko-developer-loader-overlay' ).fadeIn();
+			}
 		}
+	});
+
+	$( '#aiko-developer-publish-confirm-yes' ).on( 'click', function() {
+		event.preventDefault();
+		$( '#aiko-developer-after-title' ).attr( 'data-rephrased-flag', '0' );
+		$( '#publish' ).trigger( 'click' );
+		$( '#aiko-developer-publish-confirm-popup-overlay' ).fadeOut();
 	});
 
 	// Download ZIP
@@ -312,8 +344,8 @@ jQuery( document ).ready( function( $ ) { "use strict";
 				success: function( response ) {
 					if ( response.success ) {
 						$( '#aiko-developer-rephrased-popup-overlay' ).fadeIn();
-						$( '#aiko-developer-old-text' ).text( response.data.old );
-						$( '#aiko-developer-rephrased-text' ).text( response.data.rephrased );
+						// $( '#aiko-developer-old-text' ).html( format_text( response.data.old ) );
+						$( '#aiko-developer-current-text' ).html( format_text( response.data.rephrased ) );
 					} else {
 						if ( response.data.code ) {
 							$( '#aiko-developer-alert-popup-overlay' ).fadeIn();
@@ -334,10 +366,26 @@ jQuery( document ).ready( function( $ ) { "use strict";
 
 	// Submit rephrased functional requirements
 	$( '#aiko-developer-rephrase-submit' ).on( 'click', function() {
-		$( '#aiko-developer-status' ).val( '3' );
-		$( '#aiko-developer-loader-overlay' ).fadeIn();
-		$( '#aiko-developer-rephrased-popup-overlay' ).fadeOut();
-		$( '#aiko-developer-rephrase-submit' ).data( 'type', '' );
+		if ( $( this ).attr( 'data-type' ) === 'first' ) {
+			event.preventDefault();
+			$( '#aiko-developer-rephrased-popup-overlay' ).fadeOut();
+			$( '#aiko-developer-input' ).val( revert_text( $( '#aiko-developer-current-text' ).html().trim() ) );
+			var code_not_generated_is_shown = $( '#aiko-developer-code-not-generated-wrapper' ).hasClass( 'aiko-developer-notice-show' );
+			$( '.aiko-developer-notice-show' ).removeClass( 'aiko-developer-notice-show' );
+			if ( code_not_generated_is_shown ) {
+				$( '#aiko-developer-code-not-generated-wrapper' ).addClass( 'aiko-developer-notice-show' );
+			}
+			var api_not_present_is_shown = $( '#aiko-developer-api-not-present-wrapper' ).hasClass( 'aiko-developer-notice-show' );
+			if ( api_not_present_is_shown ) {
+				$( '#aiko-developer-api-not-present-wrapper' ).addClass( 'aiko-developer-notice-show' );
+			}
+			$( '#aiko-developer-rephrase-comments-notice' ).addClass( 'aiko-developer-notice-show' );
+		} else {
+			$( '#aiko-developer-status' ).val( '3' );
+			$( '#aiko-developer-loader-overlay' ).fadeIn();
+			$( '#aiko-developer-rephrased-popup-overlay' ).fadeOut();
+			$( '#aiko-developer-rephrase-submit' ).data( 'type', '' );
+		}
 	});
 
 	// Undo rephrase of functional requirements
@@ -367,7 +415,7 @@ jQuery( document ).ready( function( $ ) { "use strict";
 	});
 
 	// Rephrase user prompt
-	$( '#aiko-developer-user-prompt-rephrase' ).on( 'click', function() {
+	$( '#aiko-developer-user-prompt-rephrase, #aiko-developer-show-rephrase' ).on( 'click', function() {
 		event.preventDefault();
 
 		if ( apiKey === '' ) {
@@ -375,6 +423,12 @@ jQuery( document ).ready( function( $ ) { "use strict";
 			$( '#aiko-developer-alert-text' ).text( aiko_developer_get_message( "error-no-api-key" ) );
 			$( '#aiko-developer-alert-ok' ).data( 'action', 'openai-api-url' );
 			return;
+		}
+
+		$( '#aiko-developer-after-title' ).attr( 'data-rephrased-flag', '0' );
+
+		if ( $( this ).attr( 'id' ) === 'aiko-developer-show-rephrase' ) {
+			$( '#aiko-developer-publish-confirm-popup-overlay' ).fadeOut();
 		}
 
 		if ( $( '#aiko-developer-input' ).val() ) {
@@ -391,9 +445,10 @@ jQuery( document ).ready( function( $ ) { "use strict";
 				},
 				success: function( response ) {
 					if ( response.success ) {
-						$( '#aiko-developer-rephrased-user-prompt-popup-overlay' ).fadeIn();
-						$( '#aiko-developer-old-user-prompt-text' ).text( response.data.old );
-						$( '#aiko-developer-rephrased-user-prompt-text' ).text( response.data.rephrased );
+						$( '#aiko-developer-rephrased-popup-overlay' ).fadeIn();
+						// $( '#aiko-developer-old-user-prompt-text' ).html( format_text( response.data.old ) );
+						$( '#aiko-developer-current-text' ).html( format_text( response.data.rephrased ) );
+						$( '#aiko-developer-rephrase-submit' ).attr( 'data-type', 'first' );
 					} else {
 						if ( response.data.code ) {
 							$( '#aiko-developer-alert-popup-overlay' ).fadeIn();
@@ -416,27 +471,10 @@ jQuery( document ).ready( function( $ ) { "use strict";
 		}
 	});
 
-	// Submit rephrase of user prompt
-	$( '#aiko-developer-rephrase-user-prompt-submit' ).on( 'click', function() {
-		event.preventDefault();
-		$( '#aiko-developer-rephrased-user-prompt-popup-overlay' ).fadeOut();
-		$( '#aiko-developer-input' ).val( $( '#aiko-developer-rephrased-user-prompt-text' ).text().trim() );
-		var code_not_generated_is_shown = $( '#aiko-developer-code-not-generated-wrapper' ).hasClass( 'aiko-developer-notice-show' );
-		$( '.aiko-developer-notice-show' ).removeClass( 'aiko-developer-notice-show' );
-		if ( code_not_generated_is_shown ) {
-			$( '#aiko-developer-code-not-generated-wrapper' ).addClass( 'aiko-developer-notice-show' );
-		}
-		var api_not_present_is_shown = $( '#aiko-developer-api-not-present-wrapper' ).hasClass( 'aiko-developer-notice-show' );
-		if ( api_not_present_is_shown ) {
-			$( '#aiko-developer-api-not-present-wrapper' ).addClass( 'aiko-developer-notice-show' );
-		}
-		$( '#aiko-developer-rephrase-comments-notice' ).addClass( 'aiko-developer-notice-show' );
-	});
-
 	// Undo rephrase of user prompt
 	$( '#aiko-developer-rephrase-user-prompt-undo' ).on( 'click', function() {
 		event.preventDefault();
-		$( '#aiko-developer-rephrased-user-prompt-popup-overlay' ).fadeOut();
+		$( '#aiko-developer-rephrased-popup-overlay' ).fadeOut();
 	});
 
 	// Copy code

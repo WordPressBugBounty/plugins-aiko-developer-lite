@@ -114,7 +114,7 @@ class Aiko_Developer_Core_Framework {
 		$messages['error-empty-fr']                 = esc_html__( 'Error: Cannot save the plugin without Functional Requirements.', 'aiko-developer-lite' );
 		$messages['error-empty-fr-rephrase']        = esc_html__( 'Error: The plugin cannot be saved without Functional Requirements', 'aiko-developer-lite' );
 		$messages['error-empty-comment-rephrase']   = esc_html__( 'Error: There is no text that could be rephrased.', 'aiko-developer-lite' );
-		$messages['error-no-improvements']          = esc_html__( 'No improvements have been selected.', 'aiko-developer-lite' );
+		$messages['error-no-improvements']          = esc_html__( 'No suggestions have been selected.', 'aiko-developer-lite' );
 		$messages['success-rephrase']               = esc_html__( 'We have rephrased your text. Press UPDATE to generate new code.', 'aiko-developer-lite' );
 		$messages['success-rephrase-first']         = esc_html__( 'We have rephrased your text. Press PUBLISH to generate code.', 'aiko-developer-lite' );
 		$messages['error-rephrase']                 = esc_html__( 'Error occured. We could not rephrase your text.', 'aiko-developer-lite' );
@@ -130,6 +130,7 @@ class Aiko_Developer_Core_Framework {
 		$messages['notice-apply-improvements']      = esc_html__( 'Improvement suggestions are ready. Now you can add them to Functional Requirements.', 'aiko-developer-lite' );
 		$messages['notice-comment-not-added']       = esc_html__( 'There are some improvements which are not included in Functional Requirements, so we did it for you. If you accept we will generate the code.', 'aiko-developer-lite' );
 		$messages['confirm-cancel-edit']            = esc_html__( 'Are you sure you want to cancel? Edits will not be saved.', 'aiko-developer-lite' );
+		$messages['confirm-cancel-rephrase']        = esc_html__( 'Are you sure you want to cancel? Rephrased Functional Requirements will not be saved.', 'aiko-developer-lite' );
 		$messages['label-first']                    = esc_html__( 'Functional Requirements', 'aiko-developer-lite' );
 		$messages['label-first-description']        = esc_html__( 'Write your initial idea and technical requirements. We highly recommend using the Rephrase option before publishing.', 'aiko-developer-lite' );
 		$messages['label-after']                    = esc_html__( 'Improvements', 'aiko-developer-lite' );
@@ -232,5 +233,15 @@ class Aiko_Developer_Core_Framework {
 
 	public function get_aiko_developer_sanitize_from_post( $post_array, $arg ) {
 		return $this->aiko_developer_sanitize_from_post( $post_array, $arg );
+	}
+
+	private function aiko_developer_sanitize_array_recursive( $array ) {
+        return array_map( function ( $item ) {
+            return is_array( $item ) ? $this->aiko_developer_sanitize_array_recursive( $item ) : sanitize_text_field( $item );
+        }, $array );
+    }
+
+	public function get_aiko_developer_sanitize_array_recursive( $array ) {
+		return $this->aiko_developer_sanitize_array_recursive( $array );
 	}
 }

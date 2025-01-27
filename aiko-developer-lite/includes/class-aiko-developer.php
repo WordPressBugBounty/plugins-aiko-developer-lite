@@ -54,8 +54,9 @@ class Aiko_Developer_Lite {
 			$last                    = reset( $revisions );
 			$code_not_generated      = get_post_meta( $post->ID, '_code_not_generated', true );
 			$api_key                 = get_option( 'aiko_developer_api_key', '' );
+			$rephrased_flag          = get_post_meta( $post->ID, '_aiko_developer_rephrased_flag' );
 			?>
-			<div id="aiko-developer-after-title" data-code-not-generated="<?php echo ! empty( $code_not_generated ) ? 1 : 0; ?>">
+			<div id="aiko-developer-after-title" class="aiko-developer-lite" data-code-not-generated="<?php echo ! empty( $code_not_generated ) ? 1 : 0; ?>" data-rephrased-flag="<?php echo ! empty( $rephrased_flag ) ? 0 : 1; ?>">
 				<?php if ( $post->post_name ) : ?>
 				<div id="aiko-developer-post-slug-div">
 					<label for="aiko-developer-post-slug"><?php echo esc_html__( 'Slug', 'aiko-developer-lite' ); ?></label>
@@ -250,15 +251,52 @@ class Aiko_Developer_Lite {
 						</div>
 					</div>
 
-					<div id="aiko-developer-rephrased-popup-overlay" class="aiko-developer-popup-overlay">
+					<div id="aiko-developer-rephrased-popup-overlay" class="aiko-developer-popup-overlay aiko-developer-popup">
 						<div id="aiko-developer-rephrased-popup-content" class="aiko-developer-popup-content">
-							<h3 id="aiko-developer-rephrased-user-prompt-popup-content-title"><?php echo esc_html__( 'AI consultant has rephrased your functional requirements', 'aiko-developer-lite' ); ?></h3>
-							<div id="aiko-developer-comment-not-added">
-								<p id="aiko-developer-comment-not-added-text"></p>
+							<div class="aiko-developer-popup-content-title">
+								<h3 id="aiko-developer-rephrased-popup-content-title"><?php echo esc_html__( 'Functional requirements', 'aiko-developer-lite' ); ?></h3>
+								<p class="aiko-developer-block-description"><?php echo esc_html__( 'Here is the most recent version of the Functional Requirements. Please use the iframe on the right to enhance it.', 'aiko-developer-lite' ); ?></p>
 							</div>
 							<div id="aiko-developer-rephrased-popup-content-text" class="aiko-developer-popup-content-text">
-								<div id="aiko-developer-old"><b><?php echo esc_html__( 'Before: ', 'aiko-developer-lite' ); ?></b><p id="aiko-developer-old-text"></p></div>
-								<div id="aiko-developer-new"><b><?php echo esc_html__( 'After: ', 'aiko-developer-lite' ); ?></b><p id="aiko-developer-rephrased-text"></p></div>
+								<div id="aiko-developer-current">
+									<div id="aiko-developer-current-text"></div>
+								</div>
+								<div id="aiko-developer-chatbox-wrapper">
+									<div id="aiko-developer-chatbox">
+										<div id="aiko-developer-chatbox-messages-buttons">
+											<div id="aiko-developer-chatbox-messages-buttons-wrapper">
+												<div id="aiko-developer-chatbox-messages">
+													<div id="aiko-developer-buy-full-wrapper" class="aiko-developer-block aiko-developer-buy-full-main">
+														<h2 id="aiko-developer-buy-full-title"><?php echo esc_html__( 'There is a Pro version of this plugin!', 'aiko-developer-lite' ); ?></h2>
+														<p id="aiko-developer-buy-full-description"><?php echo esc_html__( 'The Pro version of AIKO Developer Lite provides advanced features, such as: temperature settings for all models, easy extension of functional requirements, code review and improvement suggestions, automatic deployment, WordPress Playground testing options (default plugins and themes, import content) and many more. ', 'aiko-developer-lite' ); ?> </p><p id="aiko-developer-buy-full-call-to action"><a href="<?php echo esc_url( 'https://codecanyon.net/item/aiko-instant-plugins-ai-developer/54220020' ); ?>" target="_blank" rel="noopener noreferrer" class="button button-primary"><?php echo esc_html__( 'Buy full version', 'aiko-developer-lite' ); ?></a></p>
+													</div>
+												</div>
+												<div id="aiko-developer-chatbox-buttons" style="display: none;">
+													<button id="aiko-developer-chatbox-submit-final" class="button button-large button-primary"><?php echo esc_html__( 'Use this', 'aiko-developer-lite' ); ?></button>
+													<span class="aiko-developer-tooltip-container">
+														<i class="dashicons dashicons-info aiko-developer-rephrase-info" aria-hidden="true"></i>
+														<span class="aiko-developer-tooltip-text"><?php echo esc_html__( 'Placeholder text', 'aiko-developer-lite' ); ?></span>
+													</span>
+													<button id="aiko-developer-chatbox-cancel-final" class="button button-large button-secondary"><?php echo esc_html__( 'Cancel', 'aiko-developer-lite' ); ?></button>
+												</div>
+											</div>
+										</div>
+										<div id="aiko-developer-chatbox-comments">
+											<div id="aiko-developer-chatbox-comment">
+												<label for="aiko-developer-comment-input">
+													<h4><?php echo esc_html__( 'Suggestions for Improvement:', 'aiko-developer-lite' ); ?></h4>
+												</label>
+												<p class="aiko-developer-block-description"><?php echo esc_html__( 'If you want to improve the Functional Requirements, write your idea.', 'aiko-developer-lite' ); ?></p>
+												<textarea id="aiko-developer-comment-input" name="aiko-developer-comment-input"></textarea>
+											</div>
+											<div id="aiko-developer-chatbox-clarifications" style="display: none;">
+												<h4><?php echo esc_html__( 'Please, answer the questions from AI consultant', 'aiko-developer-lite' ); ?></h4>
+												<p class="aiko-developer-block-description"><?php echo esc_html__( 'The AI consultant needs few clarifications to improve the requirements.', 'aiko-developer-lite' ); ?></p>	
+											</div>
+											<button id="aiko-developer-chatbox-confirm" class="button button-large button-primary" disabled data-type="comment"><?php echo esc_html__( 'Confirm', 'aiko-developer-lite' ); ?></button>
+										</div>
+									</div>
+								</div>
 							</div>
 							<div id="aiko-developer-rephrased-popup-content-buttons" class="aiko-developer-popup-content-buttons">
 								<button id="aiko-developer-rephrase-submit" class="button button-primary button-large" data-type=""><?php echo esc_html__( 'Accept rephrased text', 'aiko-developer-lite' ); ?></button>
@@ -267,21 +305,7 @@ class Aiko_Developer_Lite {
 						</div>
 					</div>
 
-					<div id="aiko-developer-rephrased-user-prompt-popup-overlay" class="aiko-developer-popup-overlay">
-						<div id="aiko-developer-rephrased-user-prompt-popup-content" class="aiko-developer-popup-content">
-							<h3 id="aiko-developer-rephrased-user-prompt-popup-content-title"><?php echo esc_html__( 'AI consultant has rephrased your functional requirements', 'aiko-developer-lite' ); ?></h3>
-							<div id="aiko-developer-rephrased-user-prompt-popup-content-text" class="aiko-developer-popup-content-text">
-								<div id="aiko-developer-old-user-prompt"><b><?php echo esc_html__( 'Before: ', 'aiko-developer-lite' ); ?></b><p id="aiko-developer-old-user-prompt-text"></p></div>
-								<div id="aiko-developer-rephrased-user-prompt"><b><?php echo esc_html__( 'After: ', 'aiko-developer-lite' ); ?></b><p id="aiko-developer-rephrased-user-prompt-text"></p></div>
-							</div>
-							<div id="aiko-developer-rephrased-user-prompt-popup-content-buttons" class="aiko-developer-popup-content-buttons">
-								<button id="aiko-developer-rephrase-user-prompt-submit" class="button button-primary button-large"><?php echo esc_html__( 'Accept rephrased text', 'aiko-developer-lite' ); ?></button>
-								<button id="aiko-developer-rephrase-user-prompt-undo" class="button button-secondary button-large"><?php echo esc_html__( 'Cancel', 'aiko-developer-lite' ); ?></button>
-							</div>
-						</div>
-					</div>
-
-					<div id="aiko-developer-alert-popup-overlay" class="aiko-developer-popup-overlay aiko-developer-popup-error">
+					<div id="aiko-developer-alert-popup-overlay" class="aiko-developer-popup-overlay aiko-developer-popup-confirm aiko-developer-popup">
 						<div id="aiko-developer-alert-popup-content" class="aiko-developer-popup-content">
 							<h3><?php echo esc_html__( 'Alert', 'aiko-developer-lite' ); ?></h3>
 							<div id="aiko-developer-alert-popup-content-text" class="aiko-developer-popup-content-text">
@@ -293,7 +317,7 @@ class Aiko_Developer_Lite {
 						</div>
 					</div>
 
-					<div id="aiko-developer-refresh-popup-overlay" class="aiko-developer-popup-overlay">
+					<div id="aiko-developer-refresh-popup-overlay" class="aiko-developer-popup-overlay aiko-developer-popup-confirm aiko-developer-popup">
 						<div id="aiko-developer-refresh-popup-content" class="aiko-developer-popup-content">
 							<h3><?php echo esc_html__( 'Refresh', 'aiko-developer-lite' ); ?></h3>
 							<div class="aiko-developer-popup-content-text">
@@ -305,7 +329,7 @@ class Aiko_Developer_Lite {
 						</div>
 					</div>
 
-					<div id="aiko-developer-confirm-popup-overlay" class="aiko-developer-popup-overlay aiko-developer-popup-error">
+					<div id="aiko-developer-confirm-popup-overlay" class="aiko-developer-popup-overlay aiko-developer-popup-confirm aiko-developer-popup">
 						<div id="aiko-developer-confirm-popup-content" class="aiko-developer-popup-content">
 							<h3><?php echo esc_html__( 'Confirm ', 'aiko-developer-lite' ); ?></h3>
 							<div class="aiko-developer-popup-content-text">
@@ -318,7 +342,7 @@ class Aiko_Developer_Lite {
 						</div>
 					</div>
 
-					<div id="aiko-developer-edit-popup-overlay" class="aiko-developer-popup-overlay">
+					<div id="aiko-developer-edit-popup-overlay" class="aiko-developer-popup-overlay aiko-developer-popup">
 						<div id="aiko-developer-edit-popup-content" class="aiko-developer-popup-content">
 							<h3><?php echo esc_html__( 'Edit', 'aiko-developer-lite' ); ?></h3>
 							<div class="aiko-developer-popup-content-text">
@@ -327,6 +351,19 @@ class Aiko_Developer_Lite {
 							<div class="aiko-developer-popup-content-buttons">
 								<button id="aiko-developer-edit-submit" class="button button-primary button-large" data-type=""><?php echo esc_html__( 'Submit', 'aiko-developer-lite' ); ?></button>
 								<button id="aiko-developer-edit-cancel" class="button button-secondary button-large"><?php echo esc_html__( 'Cancel', 'aiko-developer-lite' ); ?></button>
+							</div>
+						</div>
+					</div>
+
+					<div id="aiko-developer-publish-confirm-popup-overlay" class="aiko-developer-popup-overlay aiko-developer-popup-confirm aiko-developer-popup">
+						<div id="aiko-developer-publish-confirm-popup-content" class="aiko-developer-popup-content">
+							<h3><?php echo esc_html__( 'Confirm ', 'aiko-developer-lite' ); ?></h3>
+							<div class="aiko-developer-popup-content-text">
+								<p id="aiko-developer-publish-confirm-text"><?php echo esc_html__( 'We strongly recommend using our Rephrase option for optimal results. Are you sure you want to proceed without it?', 'aiko-developer-lite' ); ?></p>
+							</div>
+							<div class="aiko-developer-popup-content-buttons">
+								<button id="aiko-developer-show-rephrase" class="button button-secondary button-large"><?php echo esc_html__( 'Show Rephrase popup', 'aiko-developer-lite' ); ?></button>
+								<button id="aiko-developer-publish-confirm-yes" class="button button-primary button-large"><?php echo esc_html__( 'Yes, I confirm', 'aiko-developer-lite' ); ?></button>
 							</div>
 						</div>
 					</div>

@@ -108,7 +108,7 @@ class Aiko_Developer_Core_Lite extends Aiko_Developer_Core_Framework {
 			$code_fixer_prompt_elementor    = $prompts['code-fixer']['additional-requirements']['elementor'];
 			$code_fixer_prompt_woocommerce  = $prompts['code-fixer']['additional-requirements']['woocommerce'];
 
-			$developer_message  = $developer_prompt_base . $developer_prompt_requirements;
+			$developer_message  = $developer_prompt_base . $developer_prompt_requirements . $developer_prompt_file_format;
 			$code_fixer_message = $code_fixer_prompt_base . $code_fixer_prompt_requirements;
 
 			if ( str_contains( strtolower( $current_functional_requirements ), 'elementor' ) ) {
@@ -119,9 +119,11 @@ class Aiko_Developer_Core_Lite extends Aiko_Developer_Core_Framework {
 				$code_fixer_message = $code_fixer_message . "\n" . $code_fixer_prompt_woocommerce;
 			}
 
+			$code_fixer_message .= $developer_prompt_file_format;
+
 			$messages = array(
 				array(
-					'role'    => $o1_developer_flag ? 'user' : 'system',
+					'role'    => $o1_flag ? 'user' : 'system',
 					'content' => $developer_message,
 				),
 			);
@@ -137,7 +139,7 @@ class Aiko_Developer_Core_Lite extends Aiko_Developer_Core_Framework {
 				$current_php  = get_post_meta( $post_id, '_php_output', true );
 				$current_js   = get_post_meta( $post_id, '_js_output', true );
 				$current_css  = get_post_meta( $post_id, '_css_output', true );
-				$current_code = "```php\n" . esc_html( $current_php ) . "\n```\n```js\n" . esc_html( $current_js ) . "\n```\n```css\n" . esc_html( $current_css ) . "\n```\n";
+				$current_code = "```php\n" . $current_php . "\n```\n```js\n" . $current_js . "\n```\n```css\n" . $current_css . "\n```\n";
 				
 				$messages[] = array(
 					'role'    => 'user',
@@ -235,6 +237,7 @@ class Aiko_Developer_Core_Lite extends Aiko_Developer_Core_Framework {
 							update_post_meta( $post_id, '_generation', array( true, 'success-generate', '' ) );
 							update_post_meta( $post_id, '_can_generate', 0 );
 							update_post_meta( $post_id, '_code_not_generated', false );
+							update_post_meta( $post_id, '_aiko_developer_rephrased_flag', '0' );
 						}
 					}
 				}

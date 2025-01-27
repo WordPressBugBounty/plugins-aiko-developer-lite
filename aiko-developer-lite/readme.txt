@@ -5,7 +5,7 @@ Tags: AI, AI WordPress, AI code generator, AI developer, AI programmer
 Requires at least: 5.0
 Tested up to: 6.6
 Requires PHP: 7.0
-Stable tag: 1.0.4
+Stable tag: 2.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -133,6 +133,13 @@ Of course:
 13. Settings page
 
 == Changelog ==
+
+= 2.0.0 =
+
+* Minor bug fixes
+* Rephrase functional requirements algorithm & interface updated
+* Requirements clarifications functionality added (Pro version only)
+* Code reviewer suggestions algorithm updated (Pro version only)
 
 = 1.0.4 =
 

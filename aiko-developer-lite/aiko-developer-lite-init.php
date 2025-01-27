@@ -2,7 +2,7 @@
 /**
  * Plugin Name: AIKO - AI Developer Lite
  * Description: AI powered plugin that creates plugins for users without experience (Lite version)
- * Version: 1.0.4
+ * Version: 2.0.0
  * Author: BoldThemes
  * Author URI: https://www.bold-themes.com
  * License: GPLv2 or later
