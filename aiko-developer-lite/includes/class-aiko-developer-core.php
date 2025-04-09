@@ -87,11 +87,10 @@ class Aiko_Developer_Core_Lite extends Aiko_Developer_Core_Framework {
 			}
 
 			$url     = 'https://api.openai.com/v1/chat/completions';
-			$api_key = get_option( 'aiko_developer_api_key', '' );
+			$api_key = get_option( 'aiko_developer_openai_api_key', '' );
 
-			$model   = get_option( 'aiko_developer_model', 'gpt-4o' );
-			$model   = $this->get_aiko_developer_old_model_fallback( $model, 'developer' );
-			$o1_flag = 'o1-preview' === $model || 'o1-mini' === $model;
+			$model   = get_option( 'aiko_developer_openai_model', 'gpt-4o' );
+			$o1_flag = 'o1-preview' === $model || 'o1-mini' === $model || 'o3-mini' === $model;
 
 			$post_title = get_the_title( $post_id );
 
@@ -164,9 +163,6 @@ class Aiko_Developer_Core_Lite extends Aiko_Developer_Core_Framework {
 						'messages'                                        => $messages,
 						'temperature'                                     => $o1_flag ? 1 : 0,
 						$o1_flag ? 'max_completion_tokens' : 'max_tokens' => $o1_flag ? 16384 : 4096,
-						'top_p'                                           => 1,
-						'frequency_penalty'                               => 0,
-						'presence_penalty'                                => 0,
 					)
 				),
 			);
@@ -208,9 +204,6 @@ class Aiko_Developer_Core_Lite extends Aiko_Developer_Core_Framework {
 								'messages'                                        => $code_fixer_messages,
 								'temperature'                                     => $o1_flag ? 1 : 0,
 								$o1_flag ? 'max_completion_tokens' : 'max_tokens' => $o1_flag ? 16384 : 4096,
-								'top_p'                                           => 1,
-								'frequency_penalty'                               => 0,
-								'presence_penalty'                                => 0,
 							)
 						),
 					);
@@ -238,6 +231,7 @@ class Aiko_Developer_Core_Lite extends Aiko_Developer_Core_Framework {
 							update_post_meta( $post_id, '_can_generate', 0 );
 							update_post_meta( $post_id, '_code_not_generated', false );
 							update_post_meta( $post_id, '_aiko_developer_rephrased_flag', '0' );
+							update_post_meta( $post_id, '_used_model', $model );
 						}
 					}
 				}

@@ -1,10 +1,12 @@
 jQuery( document ).ready( function( $ ) { "use strict";
+	$( '#aiko-developer-after-title' ).show();
 	// Variables
 	var postID = $( '#post_ID' ).val();
 	var ajaxUrl = aiko_developer_object.ajax_url
 	var apiKey = aiko_developer_object.api_key;
 	var settingsPage = aiko_developer_object.link;
-	const messages = aiko_developer_object.pluginMessages;
+	const messages = aiko_developer_object.plugin_messages;
+	const selectedModel = aiko_developer_object.selected_model;
 
 	function aiko_developer_code_not_generated() {
 		var code_not_generated = $( '#aiko-developer-after-title' ).data( 'code-not-generated' );
@@ -29,10 +31,9 @@ jQuery( document ).ready( function( $ ) { "use strict";
 		var postStatus = $( '#original_post_status' ).val();
 
 		if ( postStatus === 'publish' && $( '#aiko-developer-first' ).val() !== '1' ) {
-			$( '#aiko-developer-input-label' ).text( aiko_developer_get_message( "label-after" ) );
-			$( '#aiko-developer-description-label' ).text( aiko_developer_get_message( "label-after-description" ) );
 			$( '#aiko-developer-download-meta-box, #aiko-developer-php-output-meta-box, #aiko-developer-js-output-meta-box, #aiko-developer-css-output-meta-box, #aiko-developer-functional-requirements-output, #aiko-developer-improvements-wrapper' ).show();
 			$( '#aiko-developer-user-prompt-rephrase-wrapper' ).hide();
+			$( '.aiko-developer-improvements-suggestions-wrapper' ).hide();
 
 			// Notice when codes are empty
 			var phpCode = $( '#aiko-developer-php-output-meta-box pre' ).text();
@@ -52,10 +53,9 @@ jQuery( document ).ready( function( $ ) { "use strict";
 				$( '#aiko-developer-php-output-meta-box, #aiko-developer-js-output-meta-box, #aiko-developer-css-output-meta-box' ).hide();
 			}
 		} else {
-			$( '#aiko-developer-input-label' ).text( aiko_developer_get_message( "label-first" ) );
-			$( '#aiko-developer-description-label' ).text( aiko_developer_get_message( "label-first-description" ) );
 			$( '#aiko-developer-download-meta-box, #aiko-developer-php-output-meta-box, #aiko-developer-js-output-meta-box, #aiko-developer-css-output-meta-box, #aiko-developer-functional-requirements-output, #aiko-developer-improvements-wrapper' ).hide();
 			$( '#aiko-developer-user-prompt-rephrase-wrapper' ).show();
+			$( '.aiko-developer-improvements-suggestions-wrapper' ).show();
 		}
 	}
 
@@ -79,12 +79,12 @@ jQuery( document ).ready( function( $ ) { "use strict";
 		return formatted;
 	}
 
-	function revert_text(formatted) {
-		let reverted = formatted.replace(/<b>(.*?)<\/b>/g, "**$1**");
+	function revert_text( formatted ) {
+		let reverted = formatted.replace( /<b>(.*?)<\/b>/g, "**$1**" );
 		
-		reverted = reverted.replace(/&emsp;-/g, "   -");
+		reverted = reverted.replace( /&emsp;-/g, "   -" );
 		
-		reverted = reverted.replace(/<br>/g, "\n");
+		reverted = reverted.replace( /<br>/g, "\n" );
 		
 		return reverted;
 	}
@@ -532,11 +532,143 @@ jQuery( document ).ready( function( $ ) { "use strict";
 	$( '.aiko-developer-test-start' ).on( 'click', function() {
 		event.preventDefault();
 		
-		var php = $( '#aiko-developer-php-output-meta-box pre' ).text().replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n');
-		var js = $( '#aiko-developer-js-output-meta-box pre' ).text().replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n');
-		var css = $( '#aiko-developer-css-output-meta-box pre' ).text().replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n');
+		var php = $( '#aiko-developer-php-output-meta-box pre' ).text().replace( /\\/g, '\\\\' ).replace( /"/g, '\\"' ).replace( /\n/g, '\\n' );
+		var js = $( '#aiko-developer-js-output-meta-box pre' ).text().replace( /\\/g, '\\\\' ).replace( /"/g, '\\"' ).replace( /\n/g, '\\n' );
+		var css = $( '#aiko-developer-css-output-meta-box pre' ).text().replace( /\\/g, '\\\\' ).replace( /"/g, '\\"' ).replace (/\n/g, '\\n' );
 		var bluePrint = btoa( '{ "preferredVersions": { "php": "latest", "wp": "latest" }, "landingPage": "/wp-admin/plugins.php", "phpExtensionBundles": [ "kitchen-sink" ], "features": { "networking": true }, "steps": [ { "step": "login", "username": "admin", "password": "password" }, { "step": "mkdir", "path": "/wordpress/wp-content/plugins/my-plugin" }, { "step": "writeFile", "path": "/wordpress/wp-content/plugins/my-plugin/plugin-file.php", "data": "' + php + '" }, { "step": "writeFile", "path": "/wordpress/wp-content/plugins/my-plugin/plugin-scripts.js", "data": "' + js + '" }, { "step": "writeFile", "path": "/wordpress/wp-content/plugins/my-plugin/plugin-styles.css", "data": "' + css + '" }, { "step": "activatePlugin", "pluginPath": "/wordpress/wp-content/plugins/my-plugin" } ] }' );
 		var url = "https://playground.wordpress.net/#" + bluePrint;
 		window.open( url, '_blank', 'noopener, noreferrer' );
+	});
+
+	// Prompt base
+	$( '#aiko-developer-import-prompt' ).on( 'click', function() {
+		event.preventDefault();
+		const prompt_base_empty = $( '#aiko-developer-prompt-base-empty' ).val();
+		if ( prompt_base_empty === 'false' ) {
+			$( '.aiko-developer-prompt-base-container' ).removeClass( 'aiko-developer-prompt-base-selected' );
+			$( '.aiko-developer-prompt-base-tab[data-tag="all"]' ).trigger( 'click' );
+			$( '#aiko-developer-prompt-base-preview' ).children().remove();
+			$( '#aiko-developer-prompt-base-overlay' ).fadeIn();
+		} else {
+			$( '#aiko-developer-prompt-base-empty-popup-overlay' ).fadeIn();
+		}
+	});
+	
+	$( '.aiko-developer-prompt-base-tab' ).on( 'click', function() {
+		$( '.aiko-developer-prompt-base-tab' ).removeClass( 'aiko-developer-prompt-base-active' );
+		$( this ).addClass( 'aiko-developer-prompt-base-active' );
+
+		const tag = $( this ).data( 'tag' );
+
+		$( '.aiko-developer-prompt-base-container' ).each( function() {
+			const tags = $( this ).data( 'tags' ).split( ', ' );
+			if ( tag === 'all' || tags.includes( tag ) ) {
+				$( this ).show();
+			} else {
+				$( this ).hide();
+			}
+		});
+	});
+
+	$( '.aiko-developer-prompt-base-container' ).on( 'click', function() {
+		if ( ! $( this ).hasClass( 'aiko-developer-prompt-base-pro-only' ) ) {
+			$( '.aiko-developer-prompt-base-container' ).removeClass( 'aiko-developer-prompt-base-selected' );
+			
+			$( this ).addClass( 'aiko-developer-prompt-base-selected' );
+
+			const title = $( this ).find( '.aiko-developer-prompt-base-prompt-title' ).text();
+			const description = $( this ).find( '.aiko-developer-prompt-base-prompt-description' ).text();
+			const tags = $( this ).data( 'tags' );
+			const model = $ ( this ).find( '.aiko-developer-prompt-base-prompt-span-model' ).text();
+			const promptText = $( this ).find( '.aiko-developer-prompt-base-prompt-text' ).val();
+			const playground = $( this ).find( '.aiko-developer-prompt-base-playground' ).val();
+			const screenshots = $( this ).find( '.aiko-developer-prompt-base-screenshots' ).val();
+
+			$( '#aiko-developer-prompt-base-preview' ).children().remove();
+			$( '#aiko-developer-prompt-base-preview' ).html( `
+				<div id="aiko-developer-importing-selected">
+					<div id="aiko-developer-importing-selected-heading">
+						<h3 id="aiko-developer-importing-selected-title">${title}</h3>
+						<p id="aiko-developer-importing-selected-description">${description}</p>
+					</div>
+					<div id="aiko-developer-importing-selected-prompt-wrapper">
+						<p class="aiko-developer-prompt-base-prompt-tags"><strong>${aiko_developer_get_message( 'tags' )}:</strong> ${tags}</p>
+						<p class="aiko-developer-prompt-base-prompt-model"><strong>Model:</strong> <span id="aiko-developer-importing-selected-model"${model !== selectedModel ? ' class="aiko-developer-not-matching"' : ''}>${model}</span>
+						${model !== selectedModel ? '<span class="aiko-developer-tooltip-container aiko-developer-prompt-base-prompt-warning aiko-developer-prompt-base-model-warning"><i class="dashicons dashicons-info aiko-developer-rephrase-info" aria-hidden="true"></i><span class="aiko-developer-tooltip-text">' + aiko_developer_get_message( 'model-not-matching' ) + '</span></span>' : ''}</p>
+						<p class="aiko-developer-importing-selected-prompt-text"><strong>${aiko_developer_get_message( 'fr' )}:</strong> <span id="aiko-developer-importing-selected-prompt">${format_text( promptText )}</p>
+						<input type="hidden" class="aiko-developer-importing-selected-screenshots" value="${screenshots}" />
+					</div>
+					<div id="aiko-developer-importing-buttons">
+						<button class="button button-large button-primary" id="aiko-developer-prompt-base-submit">${aiko_developer_get_message( 'use-this' )}</button>
+						${screenshots ? '<button id="open-gallery" class="button button-large button-secondary">' + aiko_developer_get_message( 'screenshots' ) + '</button>' : '<button class="button button-large button-secondary" disabled>' + aiko_developer_get_message( 'screenshots' ) + '</button>'}
+						${playground ? '<a class="button button-secondary" href="' + playground + '" target="_blank" rel="noopener noreferrer">Open Playground</a>' : '<a class="button button-secondary" disabled>' + aiko_developer_get_message( 'open-playground' ) + '</a>' }
+					</div>
+				</div>
+			` );
+		} else {
+			$( '.aiko-developer-prompt-base-container' ).removeClass( 'aiko-developer-prompt-base-selected' );
+			$( '#aiko-developer-prompt-base-preview' ).children().remove();
+			$( this ).addClass( 'aiko-developer-prompt-base-selected' );
+			$( '#aiko-developer-prompt-base-preview' ).html( `
+				<div id="aiko-developer-buy-full-wrapper" class="aiko-developer-block aiko-developer-buy-full-main aiko-developer-buy-full-import">
+					<h2 id="aiko-developer-buy-full-title">${aiko_developer_get_message( 'buy-full-title' )}</h2>
+					<p id="aiko-developer-buy-full-description">${aiko_developer_get_message( 'buy-full-description' )}</p>
+					<p id="aiko-developer-buy-full-call-to action"><a href="https://codecanyon.net/item/aiko-instant-plugins-ai-developer/54220020" target="_blank" rel="noopener noreferrer" class="button button-primary">${aiko_developer_get_message( 'buy-full-button' )}</a></p>
+				</div>
+			` );
+			$( '.aiko-developer-buy-full-import' ).addClass( 'aiko-developer-blinker' );
+			setTimeout( () => $( '.aiko-developer-buy-full-import' ).removeClass( 'aiko-developer-blinker' ), 600 );
+		}
+	});
+
+	$( document ).on( 'click', '#open-gallery', function() {
+		event.preventDefault();
+		var urlArray = $( '.aiko-developer-importing-selected-screenshots' ).val().split( ',' );
+		var itemsArray = urlArray.map( function( url ) {
+			return { src: url };
+		});		
+		$.magnificPopup.open({
+            items: itemsArray,
+            gallery: {
+                enabled: true
+            },
+            type: 'image'
+        });
+    });
+
+	$( '.aiko-developer-prompt-base-tab[data-tag="all"]' ).trigger( 'click' );
+
+	$( '#aiko-developer-prompt-base-close' ).on( 'click', function() {
+		$( '#aiko-developer-prompt-base-preview' ).children().remove();
+		$( '#aiko-developer-prompt-base-overlay' ).fadeOut();
+	});
+
+	$( document ).on( 'click', '#aiko-developer-prompt-base-submit', function() {
+		event.preventDefault();
+		$( '#aiko-developer-input' ).val( revert_text( $( '#aiko-developer-importing-selected-prompt' ).html() ) );
+		$( '#aiko-developer-prompt-base-overlay' ).fadeOut();
+		if ( $( '#title' ).val() === '' || $( '#title' ).val().includes( '(Imported)' ) ) {
+			$( '#title' ).val( $( '#aiko-developer-importing-selected-title' ).text() + ' (Imported)' );
+			$( '#title-prompt-text' ).addClass( 'screen-reader-text' );
+		}
+		$( '#aiko-developer-after-title' ).attr( 'data-rephrased-flag', '0' );
+		$( '#aiko-developer-prompt-imported-notice' ).addClass( 'aiko-developer-notice-show' );
+	});
+
+	$( '#aiko-developer-prompt-base-empty-popup-ok' ).on( 'click', function() {
+		event.preventDefault();
+		$( '#aiko-developer-prompt-base-empty-popup-overlay' ).fadeOut();
+	});
+
+	const textareaTargetNode = $( '#aiko-developer-input' );
+
+	textareaTargetNode.on('input', function() {
+		if ( textareaTargetNode.val().trim() !== '' ) {
+			$( '#aiko-developer-user-prompt-rephrase' ).removeClass( 'button-secondary' ).removeClass( 'aiko-developer-button-secondary' ).addClass( 'button-primary' );
+			$( '#aiko-developer-import-prompt' ).removeClass( 'button-primary' ).addClass( 'button-secondary' ).addClass( 'aiko-developer-button-secondary' );
+		} else {
+			$( '#aiko-developer-user-prompt-rephrase' ).removeClass( 'button-primary' ).addClass( 'button-secondary' ).addClass( 'aiko-developer-button-secondary' );
+			$( '#aiko-developer-import-prompt' ).removeClass( 'button-secondary' ).removeClass( 'aiko-developer-button-secondary' ).addClass( 'button-primary' );
+		}
 	});
 });

@@ -44,6 +44,11 @@ class Aiko_Developer_Lite {
 		add_action( 'wp_ajax_self_rephrase_functional_requirements', array( $this->ajax, 'aiko_developer_handle_self_rephrase_functional_requirements' ) );
 
 		add_action( 'wp_ajax_undo_rephrase', array( $this->ajax, 'aiko_developer_handle_undo_rephrase' ) );
+
+		add_action( 'init', array( $this->core, 'get_aiko_developer_maybe_schedule_prompts_update' ) );
+		add_action( 'aiko_developer_prompt_update_cron_event', array( $this->core, 'get_aiko_developer_prompt_update_cron_event' ) );
+
+		add_action( 'plugins_loaded', array( $this->core, 'get_aiko_developer_new_fields_update' ) );
 	}
 
 	private function aiko_developer_after_title_render( $post ) {
@@ -53,16 +58,28 @@ class Aiko_Developer_Lite {
 			$revisions               = wp_get_post_revisions( $post->ID );
 			$last                    = reset( $revisions );
 			$code_not_generated      = get_post_meta( $post->ID, '_code_not_generated', true );
-			$api_key                 = get_option( 'aiko_developer_api_key', '' );
+			$api_key                 = get_option( 'aiko_developer_openai_api_key', '' );
 			$rephrased_flag          = get_post_meta( $post->ID, '_aiko_developer_rephrased_flag' );
+			$slug                    = $post->post_name;
+			$used_model              = get_post_meta( $post->ID, '_used_model', true );
 			?>
 			<div id="aiko-developer-after-title" class="aiko-developer-lite" data-code-not-generated="<?php echo ! empty( $code_not_generated ) ? 1 : 0; ?>" data-rephrased-flag="<?php echo ! empty( $rephrased_flag ) ? 0 : 1; ?>">
-				<?php if ( $post->post_name ) : ?>
-				<div id="aiko-developer-post-slug-div">
-					<label for="aiko-developer-post-slug"><?php echo esc_html__( 'Slug', 'aiko-developer-lite' ); ?></label>
-					<input name="aiko-developer-post-slug" type="text" class="large-text" id="aiko-developer-post-slug" value="<?php echo esc_attr( $post->post_name ); ?>">
+				<div class="aiko-developer-after-title-info-div">
+					<?php if ( $slug ) { ?>
+					<div class="aiko-developer-post-slug-div" id="aiko-developer-post-slug-div">
+						<label for="aiko-developer-post-slug"><?php echo esc_html__( 'Slug', 'aiko-developer-lite' ); ?></label>
+						<input name="aiko-developer-post-slug" type="text" class="large-text" id="aiko-developer-post-slug" value="<?php echo esc_attr( $slug ); ?>">
+					</div>
+					<?php } ?>
+					<?php if ( ! empty( $functional_requirements ) ) { ?>
+						<div class="aiko-developer-post-data-div">
+							<span class="aiko-developer-post-data-model">
+								<span><?php echo esc_html__( 'Used model: OpenAI ', 'aiko-developer-lite' ); ?></span>
+								<span><?php echo $used_model !== "" ? $used_model : esc_html__( '-', 'aiko-developer-lite' ); ?></span>
+							</span>
+						</div>
+					<?php } ?>
 				</div>
-				<?php endif; ?>
 				<?php if ( empty( $api_key ) ) { ?>
 				<div id="aiko-developer-api-not-present-wrapper" class="aiko-developer-notice aiko-developer-notice-show aiko-developer-notice-error">
 					<div class="aiko-developer-notice-content">
@@ -146,8 +163,7 @@ class Aiko_Developer_Lite {
 					</p>
 					<div class="aiko-developer-code-actions">
 						<?php
-						$model = get_option( 'aiko_developer_model', 'gpt-4o' );
-						$model = $this->core->get_aiko_developer_old_model_fallback( $model, 'developer' );
+						$model = get_option( 'aiko_developer_openai_model', 'gpt-4o' );
 						if ( ! empty( $functional_requirements ) ) {
 							?>
 							<div id="aiko-developer-active-model">
@@ -192,14 +208,13 @@ class Aiko_Developer_Lite {
 							</div>
 
 							<label for="aiko-developer-input">
-								<h2 id="aiko-developer-input-label" class="aiko-developer-block-title"></h2>
-								<p id="aiko-developer-description-label" class="aiko-developer-block-description"></p>
+								<h2 id="aiko-developer-input-label" class="aiko-developer-block-title"><?php echo esc_html__( 'Functional Requirements', 'aiko-developer-lite' ); ?></h2>
+								<p id="aiko-developer-description-label" class="aiko-developer-block-description"><?php echo esc_html__( 'Write your initial idea and technical requirements. We highly recommend using the Rephrase option before publishing.', 'aiko-developer-lite' ); ?></p>
 							</label>
 							<textarea id="aiko-developer-input" name="aiko-developer-input" rows="12" cols="100" placeholder="<?php echo empty( $functional_requirements ) ? esc_html__( 'Please type in your functional requirements', 'aiko-developer-lite' ) : esc_html__( 'Please type in your improvement idea', 'aiko-developer-lite' ); ?>"></textarea>
 							<div class="aiko-developer-code-actions">
 								<?php
-								$model = get_option( 'aiko_developer_model', 'gpt-4o' );
-								$model = $this->core->get_aiko_developer_old_model_fallback( $model, 'developer' );
+								$model = get_option( 'aiko_developer_openai_model', 'gpt-4o' );
 								if ( empty( $functional_requirements ) ) {
 									?>
 									<div id="aiko-developer-active-model">
@@ -209,10 +224,11 @@ class Aiko_Developer_Lite {
 								}
 								?>
 								<div id="aiko-developer-user-prompt-rephrase-wrapper">
-									<button id="aiko-developer-user-prompt-rephrase" class="button button-primary button-large"><?php echo esc_html__( 'Ask OpenAI to rephrase', 'aiko-developer-lite' ); ?></button>
+									<button id="aiko-developer-user-prompt-rephrase" class="button button-secondary button-large aiko-developer-button-secondary"><?php echo esc_html__( 'Ask OpenAI to rephrase', 'aiko-developer-lite' ); ?></button>
+									<button id="aiko-developer-import-prompt" class="button button-large button-primary"><?php echo esc_html__( 'Import Functional Requirements', 'aiko-developer-lite' ); ?></button>
 									<div class="aiko-developer-tooltip-container">
 										<i class="dashicons dashicons-info aiko-developer-rephrase-info" aria-hidden="true"></i>
-										<div class="aiko-developer-tooltip-text"><?php echo esc_html__( 'An AI tool that uses the entered text and generates functional requirements based on it.', 'aiko-developer-lite' ); ?></div>
+										<div class="aiko-developer-tooltip-text"><?php echo esc_html__( 'You have the option to import the functional requirements or enter them manually. In either scenario, you can utilize the rephrase function to refine them.', 'aiko-developer-lite' ); ?></div>
 									</div>
 								</div>
 							</div>
@@ -367,6 +383,118 @@ class Aiko_Developer_Lite {
 							</div>
 						</div>
 					</div>
+
+					<?php
+
+					$upload_dir       = wp_upload_dir();
+					$prompt_base_path = trailingslashit( $upload_dir['basedir'] ) . 'aiko-developer/prompts.json';
+					$prompt_base      = file_get_contents( $prompt_base_path );
+					$prompt_base      = json_decode( $prompt_base, true );
+
+					if ( ! empty( $prompt_base ) || is_array( $prompt_base ) ) {
+						wp_enqueue_style( 'magnific-popup', 'https://cdn.jsdelivr.net/npm/magnific-popup@1.1.0/dist/magnific-popup.css', array(), '1.1.0' );
+    
+						wp_enqueue_script( 'magnific-popup', 'https://cdn.jsdelivr.net/npm/magnific-popup@1.1.0/dist/jquery.magnific-popup.min.js', array('jquery'), '1.1.0', true );
+						?>
+						<input type="hidden" id="aiko-developer-prompt-base-empty" value="false">
+						<?php
+						$tags = array();
+						foreach ( $prompt_base as $prompt ) {
+							$tags = array_merge( $tags, $prompt['tags'] );
+						}
+						$tags = array_unique( $tags );
+						?>
+
+						<div id="aiko-developer-prompt-base-overlay" class="aiko-developer-popup-overlay aiko-developer-popup">
+							<div id="aiko-developer-prompt-base-content" class="aiko-developer-popup-content aiko-developer-popup-content-import">
+								<div class="aiko-developer-popup-content-title">
+									<h3 id="aiko-developer-prompt-base-content-title"><?php echo esc_html__( 'Import Functional Requiremnets', 'aiko-developer-lite' ); ?></h3>
+									<p class="aiko-developer-block-description"><?php echo esc_html__( 'Import tested and ready to use Functional Requirements.', 'aiko-developer-lite' ); ?></p>
+									<div id="aiko-developer-prompt-base-close"><?php echo esc_html__( 'Close', 'aiko-developer-lite' ); ?></div>
+								</div>
+								<div id="aiko-developer-prompt-base-content-text" class="aiko-developer-popup-content-text">
+									<div id="aiko-developer-prompt-base-list">
+										<div id="aiko-developer-prompt-base-list-inner">
+											<div class="aiko-developer-prompt-base-tabs">
+												<div class="aiko-developer-prompt-base-tab aiko-developer-prompt-base-active" data-tag="all">All</div>
+												<?php
+												foreach( $tags as $tag ) {
+													?>
+													<div class="aiko-developer-prompt-base-tab" data-tag="<?php echo esc_attr( $tag ); ?>"><?php echo esc_html( $tag ); ?></div>
+													<?php
+												}
+												?>
+											</div>
+
+											<div id="aiko-developer-prompt-base-prompts">
+												<?php
+												foreach( $prompt_base as $prompt ) {
+													$prompt_tags = '';
+													foreach( $prompt['tags'] as $prompt_tag ) {
+														$prompt_tags .= $prompt_tag . ' ';
+													}
+													$prompt_tags = str_replace( ' ', ', ', rtrim( $prompt_tags ) );
+													if ( $prompt['pro-only'] === 'false' ) {
+														?>
+														<div class="aiko-developer-prompt-base-container" data-tags="<?php echo esc_attr( $prompt_tags ); ?>">
+															<h3  class="aiko-developer-prompt-base-prompt-title"><?php echo esc_html( $prompt['title'] ); ?></h3>
+															<p class="aiko-developer-prompt-base-prompt-description"><?php echo esc_html( $prompt['description'] ); ?></p>
+															<p class="aiko-developer-prompt-base-prompt-tags"><strong><?php echo esc_html__( 'Tags:', 'aiko-developer-lite' ); ?> </strong><span class="aiko-developer-prompt-base-prompt-span-tags"><?php echo esc_html( $prompt_tags ); ?></span></p>
+															<p class="aiko-developer-prompt-base-prompt-model"><strong><?php echo esc_html__( 'Model:', 'aiko-developer-lite' ); ?> </strong><span class="aiko-developer-prompt-base-prompt-span-model<?php echo $model !== $prompt['model'] ? esc_attr( ' aiko-developer-not-matching' ) : esc_attr( '' ); ?>"><?php echo esc_html( $prompt['model'] ); ?></span>
+															<?php
+															if ( $model !== $prompt['model'] ) {
+																?>
+																<span class="aiko-developer-tooltip-container aiko-developer-prompt-base-prompt-warning aiko-developer-prompt-base-model-warning">
+																	<i class="dashicons dashicons-info aiko-developer-rephrase-info" aria-hidden="true"></i>
+																	<span class="aiko-developer-tooltip-text"><?php echo esc_html__( 'Model does not match the active model.', 'aiko-developer-lite' ); ?></span>
+																</span>
+																<?php
+															}
+															?>														
+															</p>
+															<input type="hidden" class="aiko-developer-prompt-base-screenshots" value="<?php echo esc_attr( $prompt['screenshots'] ); ?>">
+															<input type="hidden" class="aiko-developer-prompt-base-playground" value="<?php echo esc_attr( $prompt['playground'] ); ?>">
+															<input type="hidden" class="aiko-developer-prompt-base-prompt-text" value="<?php echo esc_attr( $prompt['prompt'] ); ?>">
+														</div>
+														<?php
+													} else {
+														?>
+														<div class="aiko-developer-prompt-base-container aiko-developer-prompt-base-pro-only" data-tags="<?php echo esc_attr( $prompt_tags ); ?>">
+															<h3  class="aiko-developer-prompt-base-prompt-title"><?php echo esc_html( $prompt['title'] ); ?></h3>
+															<p class="aiko-developer-prompt-base-prompt-description"><?php echo esc_html( $prompt['description'] ); ?></p>
+															<p class="aiko-developer-prompt-base-prompt-tags"><strong><?php echo esc_html__( 'Tags:', 'aiko-developer-lite' ); ?> </strong><span class="aiko-developer-prompt-base-prompt-span-tags"><?php echo esc_html( $prompt_tags ); ?></span></p>
+															<p class="aiko-developer-prompt-base-prompt-model"><strong><?php echo esc_html( 'Model:', 'aiko-developer-lite' ); ?> </strong><span class="aiko-developer-prompt-base-prompt-span-model"><?php echo esc_html( $prompt['model'] ); ?></span>													
+															</p>
+														</div>
+														<?php
+													}
+												}
+												?>
+											</div>
+										</div>
+									</div>
+									<div id="aiko-developer-prompt-base-preview"></div>
+								</div>
+							</div>
+						</div>
+						<?php
+					} else {
+						?>
+						<input type="hidden" id="aiko-developer-prompt-base-empty" value="true">
+						<div id="aiko-developer-prompt-base-empty-popup-overlay" class="aiko-developer-popup-overlay aiko-developer-popup-confirm aiko-developer-popup">
+							<div id="aiko-developer-prompt-base-empty-popup-content" class="aiko-developer-popup-content">
+								<h3><?php echo esc_html__( 'Import is not avaliable', 'aiko-developer-lite' ); ?></h3>
+								<div id="aiko-developer-prompt-base-empty-popup-content-text" class="aiko-developer-popup-content-text">
+									<p id="aiko-developer-prompt-base-empty-text"><?php echo esc_html__( 'Oops! We couldn\'t import this file. Please try again later.', 'aiko-developer-lite' ); ?></p>
+								</div>
+								<div id="aiko-developer-alert-popup-content-buttons" class="aiko-developer-popup-content-buttons">
+									<button id="aiko-developer-prompt-base-empty-popup-ok" class="button button-primary button-large"><?php echo esc_html__( 'Close', 'aiko-developer-lite' ); ?></button>
+								</div>
+							</div>
+						</div>
+						<?php
+					}
+					?>
 				</div>
 			</div>
 			<?php

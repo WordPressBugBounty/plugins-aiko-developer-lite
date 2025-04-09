@@ -5,7 +5,7 @@ Tags: AI, AI WordPress, AI code generator, AI developer, AI programmer
 Requires at least: 5.0
 Tested up to: 6.6
 Requires PHP: 7.0
-Stable tag: 2.0.0
+Stable tag: 2.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -13,7 +13,7 @@ A plugin that makes other plugins.
 
 == Description ==
 
-Transform your WordPress experience by using our revolutionary new AI powered plugin – AIKO, a plugin that makes other plugins! Designed for easy use, AIKO empowers you to create new instant custom plugins in a few minutes. An OpenAI subscription is required to use AIKO.
+Transform your WordPress experience by using our revolutionary new AI powered plugin – AIKO, a plugin that makes other plugins! Designed for easy use, AIKO empowers you to create new instant custom plugins in a few minutes. An AI platform subscription is required to use AIKO.
 
 * **Save Time**
 Quickly generate custom plugins in minutes, tailored to your needs.
@@ -30,10 +30,10 @@ Create powerful plugins without any coding knowledge.
 
 = Meet the Team =  
 
-In order to solve your needs AIKO – Instant Plugins AI Developer has a unique 3-in-1 architecture. This 3-in-1 solution enables AIKO to perform the challenging task of creating a plugin and making sure that it does the job efficiently. To that end, AIKO’s OpenAI models serve three distinct roles.
+In order to solve your needs AIKO – Instant Plugins AI Developer has a unique 3-in-1 architecture. This 3-in-1 solution enables AIKO to perform the challenging task of creating a plugin and making sure that it does the job efficiently. To that end, AIKO’s AI platform models serve three distinct roles.
 
 * **AI Developer**
-Expert WordPress programmer utilizing OpenAI for instant results.
+Expert WordPress programmer utilizing different AI platforms for instant results.
 * **AI Reviewer**
 Advanced code reviewer ensuring plugin quality and robustness (avaliable in [Pro version](https://codecanyon.net/item/aiko-instant-plugins-ai-developer/54220020)). 
 * **AI Consultant**
@@ -56,7 +56,7 @@ Website admins, developers, and small business owners looking to save time, redu
 Describe your initial idea and technical requirements in plain words. AI will assist you in rephrasing your words and in preparing the functional specification.
 
 * **AI Development**
-With Aiko and OpenAI, build your plugin at the click of a button. You'll also get ready-to-use improvement suggestions to extend functional requirements (avaliable in [Pro version](https://codecanyon.net/item/aiko-instant-plugins-ai-developer/54220020)).
+With Aiko and one of the AI platforms, build your plugin at the click of a button. You'll also get ready-to-use improvement suggestions to extend functional requirements (avaliable in [Pro version](https://codecanyon.net/item/aiko-instant-plugins-ai-developer/54220020)).
 
 * **Test & Improve**
 Use WP Playground or test locally by just clicking a button. Download ZIP or use automated (avaliable in [Pro version](https://codecanyon.net/item/aiko-instant-plugins-ai-developer/54220020)) installation. Refine the results with automated AI feedback.
@@ -81,14 +81,14 @@ AIKO Instant Plugins AI Developer allows non-developers to create custom plugins
 
 == External Service Disclosure ==
 
-This plugin utilizes the OpenAI API to generate custom WordPress plugins. 
+This plugin utilizes APIs from differnet AI platforms to generate custom WordPress plugins. 
 
 = Important Information About External Service =
 
-* **Third-Party Service**: This plugin relies on the [OpenAI API](https://openai.com) for its functionality.
-* **Terms of Use and Privacy Policy**: Please review OpenAI's [Terms of Use](https://openai.com/terms) and [Privacy Policy](https://openai.com/privacy) for more information.
+* **Third-Party Service**: This plugin relies on differnet AI platforms for its functionality.
+* **Terms of Use and Privacy Policy**: Please review the Terms of Use and Privacy Policy of the AI platform you are using for more details.
 
-By using this plugin, you acknowledge and agree to the terms and conditions set forth by OpenAI. This ensures that any legal considerations regarding data transmission are properly addressed.
+By using this plugin, you acknowledge and agree to the terms and conditions set forth by used AI platform. This ensures that any legal considerations regarding data transmission are properly addressed.
 
 == Installation ==
 
@@ -133,6 +133,11 @@ Of course:
 13. Settings page
 
 == Changelog ==
+
+= 2.0.1 =
+
+* Minor bug fixes
+* Support for additional AI platforms (Pro version only: Claude and DeepSeek)
 
 = 2.0.0 =
 

@@ -23,16 +23,15 @@ class Aiko_Developer_Ajax_Lite extends Aiko_Developer_Ajax_Framework {
 			}
 
 			$url                    = 'https://api.openai.com/v1/chat/completions';
-			$api_key                = get_option( 'aiko_developer_api_key', '' );
-			$model                  = get_option( 'aiko_developer_consultant_model', 'gpt-4o-mini' );
-			$model                  = $this->core->get_aiko_developer_old_model_fallback( $model, 'consultant' );
+			$api_key                = get_option( 'aiko_developer_openai_api_key', '' );
+			$model                  = get_option( 'aiko_developer_consultant_openai_model', 'gpt-4o-mini' );
 			$prompts_json           = file_get_contents( plugin_dir_path( __DIR__ ) . 'framework/json/prompts.json' );
 			$prompts                = json_decode( $prompts_json, true );
 			$consultant_message     = $prompts['consultant']['initial'];
 			$post_id                = intval( sanitize_text_field( wp_unslash( $_POST['post_id'] ) ) );
 			$consultant_temperature = floatval( get_option( 'aiko_developer_consultant_temperature', '0.1' ) );
 
-			$o1_flag = 'o1-preview' === $model || 'o1-mini' === $model;
+			$o1_flag = 'o1-preview' === $model || 'o1-mini' === $model || 'o3-mini' === $model;
 
 			$messages = array(
 				array(
@@ -60,9 +59,6 @@ class Aiko_Developer_Ajax_Lite extends Aiko_Developer_Ajax_Framework {
 						'messages'                                        => $messages,
 						'temperature'                                     => $o1_flag ? 1 : $consultant_temperature,
 						$o1_flag ? 'max_completion_tokens' : 'max_tokens' => $o1_flag ? 16384 : 4096,
-						'top_p'                                           => 1,
-						'frequency_penalty'                               => 0,
-						'presence_penalty'                                => 0,
 					)
 				),
 			);
@@ -113,16 +109,15 @@ class Aiko_Developer_Ajax_Lite extends Aiko_Developer_Ajax_Framework {
 			}
 
 			$url                    = 'https://api.openai.com/v1/chat/completions';
-			$api_key                = get_option( 'aiko_developer_api_key', '' );
-			$model                  = get_option( 'aiko_developer_consultant_model', 'gpt-4o-mini' );
-			$model                  = $this->core->get_aiko_developer_old_model_fallback( $model, 'consultant' );
+			$api_key                = get_option( 'aiko_developer_openai_api_key', '' );
+			$model                  = get_option( 'aiko_developer_consultant_openai_model', 'gpt-4o-mini' );
 			$prompts_json           = file_get_contents( plugin_dir_path( __DIR__ ) . 'framework/json/prompts.json' );
 			$prompts                = json_decode( $prompts_json, true );
 			$consultant_message     = $prompts['consultant']['initial'];
 			$post_id                = intval( sanitize_text_field( wp_unslash( $_POST['post_id'] ) ) );
 			$consultant_temperature = floatval( get_option( 'aiko_developer_consultant_temperature', '0.1' ) ); 
 
-			$o1_flag = 'o1-preview' === $model || 'o1-mini' === $model;
+			$o1_flag = 'o1-preview' === $model || 'o1-mini' === $model || 'o3-mini' === $model;
 
 			$messages = array(
 				array(
@@ -150,9 +145,6 @@ class Aiko_Developer_Ajax_Lite extends Aiko_Developer_Ajax_Framework {
 						'messages'                                        => $messages,
 						'temperature'                                     => $o1_flag ? 1 : $consultant_temperature,
 						$o1_flag ? 'max_completion_tokens' : 'max_tokens' => $o1_flag ? 16384 : 4096,
-						'top_p'                                           => 1,
-						'frequency_penalty'                               => 0,
-						'presence_penalty'                                => 0,
 					)
 				),
 			);

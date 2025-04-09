@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$api_key = get_option( 'aiko_developer_api_key', '' );
+$api_key = get_option( 'aiko_developer_openai_api_key', '' );
 ?>
 <div class="aiko-developer-welcome-wrapper aiko-developer-lite-welcome-wrapper">
 	<div class="aiko-developer-welcome">

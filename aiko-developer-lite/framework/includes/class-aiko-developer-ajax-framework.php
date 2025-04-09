@@ -46,9 +46,12 @@ class Aiko_Developer_Ajax_Framework {
 				$zip_url = str_replace( wp_parse_url( $zip_url, PHP_URL_SCHEME ) . '://', wp_parse_url( home_url(), PHP_URL_SCHEME ) . '://', $zip_url );
 			}
 
-			$php_file = $upload_dir['path'] . '/plugin-file.php';
-			$js_file  = $upload_dir['path'] . '/plugin-scripts.js';
-			$css_file = $upload_dir['path'] . '/plugin-styles.css';
+			$plugin_dir = $upload_dir['path'] . '/' . $post_slug;
+			wp_mkdir_p( $plugin_dir );
+
+			$php_file = $plugin_dir . '/plugin-file.php';
+			$js_file  = $plugin_dir . '/plugin-scripts.js';
+			$css_file = $plugin_dir . '/plugin-styles.css';
 
 			global $wp_filesystem;
 
@@ -62,14 +65,16 @@ class Aiko_Developer_Ajax_Framework {
 
 			$zip = new ZipArchive();
 			if ( true === $zip->open( $zip_path, ZipArchive::CREATE ) ) {
-				$zip->addFile( $php_file, 'plugin-file.php' );
-				$zip->addFile( $js_file, 'plugin-scripts.js' );
-				$zip->addFile( $css_file, 'plugin-styles.css' );
+				$zip->addEmptyDir( $post_slug );
+				$zip->addFile( $php_file, $post_slug . '/plugin-file.php' );
+				$zip->addFile( $js_file, $post_slug . '/plugin-scripts.js' );
+				$zip->addFile( $css_file, $post_slug . '/plugin-styles.css' );
 				$zip->close();
 
 				wp_delete_file( $php_file );
 				wp_delete_file( $js_file );
 				wp_delete_file( $css_file );
+				rmdir( $plugin_dir );
 
 				wp_send_json_success( $zip_url );
 			} else {

@@ -55,8 +55,18 @@
    0% 		{ opacity: 1; transform: scale(1); }
    50% 		{ opacity: 0.5; transform: scale(1.1); }
    100% 	{ opacity: 1; transform: scale(1); }
- }
+}
 
+#aiko-developer-after-title, #aiko-developer-download-meta-box, #aiko-developer-confidence-meta-box, #aiko-developer-suggestions-meta-box, #aiko-developer-php-output-meta-box, #aiko-developer-js-output-meta-box, #aiko-developer-css-output-meta-box {
+	display: none;
+}
+
+.mfp-bg {
+  z-index: 9999 !important;
+}
+.mfp-wrap {
+  z-index: 10000 !important;
+}
 /* Comment input */
 
 #aiko-developer-input {
@@ -193,11 +203,11 @@
 		border: none;
 	}
 	#aiko-developer-input-wrapper {
-		flex-basis: 65%; 
+		flex-basis: 100%; 
 	}
-	#aiko-developer-improvements-wrapper {
+	/*#aiko-developer-improvements-wrapper {
 		flex-basis: 35%; 
-	}
+	}*/
 	body.post-new-php & {
 		flex-wrap: wrap;
 		#aiko-developer-input-wrapper, #aiko-developer-improvements-wrapper {
@@ -315,7 +325,7 @@
 		flex-shrink: 1;
 		align-self: center;
 		h4 {
-			margin: 0 0 1em 0;
+			margin: 0 0 0.5em 0;
 			padding: 0;
 			font-weight: 700;
 			font-size: 1.1em;
@@ -440,12 +450,23 @@ body.aiko-developer-disabled {
    overflow-y: hidden;	
 }
 
-/* Rephrse new popup */
+/* Rephrase new popup */
 
 #aiko-developer-comment-not-added, #aiko-developer-chatbox-wrapper > b {
 	display: none; /* TODO: skloni ovo */
 }
 
+#aiko-developer-rephrase,
+#aiko-developer-import-prompt {
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+/* Temp */
+
+/*#aiko-developer-import-prompt {
+    display: none !important;
+	opacity: 0 !important;
+}*/
 
 #aiko-developer-rephrased-popup-content-text,
 #aiko-developer-rephrased-user-prompt-popup-content-text {
@@ -606,6 +627,9 @@ body.aiko-developer-disabled {
 								content: "\f15e";
 							}
 						}
+						.aiko-developer-tooltip-container {
+							margin-top: 0.5em;
+						}
 					}
 				}
 				#aiko-developer-chatbox-comments {
@@ -727,6 +751,7 @@ body.aiko-developer-disabled {
 		display: block;
 		vertical-align: bottom;
 		opacity: 0.5;
+		width: 16px;
 		&:hover {
 			opacity: 1;
 		}
@@ -758,6 +783,17 @@ body.aiko-developer-disabled {
 			position: absolute;
 			width: 0;
 		}
+	}
+	&.aiko-developer-prompt-base-prompt-warning {
+		.aiko-developer-tooltip-text {
+			background: red;
+			&:after {
+				border-top: solid red 10px;
+			}
+		}
+		i.dashicons {
+			color: red;
+		}	
 	}
 	&.aiko-developer-tooltip-arrow-right {
 		.aiko-developer-tooltip-text {
@@ -847,6 +883,213 @@ body.aiko-developer-disabled {
 .aiko_developer_additional_instalations_ul {
 	margin-bottom: 0;
 }
+
+.aiko-developer-settings-show {
+    display: block !important;
+}
+
+form.aiko-developer-settings-hidden {
+	display: none;
+}
+
+form.aiko-developer-settings-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.aiko-developer-settings-on-top {
+  order: -1;
+}
+
+.aiko-developer-ai-selection label {
+	margin-right: 5px;
+}
+
+/* Import */
+
+
+.aiko-developer-popup-content.aiko-developer-popup-content-import {
+	max-width: 1200px; 
+	.aiko-developer-not-matching {
+		color: red;
+		opacity: 1 !important;
+		FONT-WEIGHT: 600;
+	}
+	.aiko-developer-popup-content-title {
+		#aiko-developer-prompt-base-close {
+			position: absolute;
+			right: 1.5em;
+			top: 1.5em;
+			color: red;
+			cursor: pointer;
+			color: #F44336;
+			&:before {
+				font-family: dashicons;
+				margin-right: 0.25em;
+				font-size: 16px;
+				line-height: 1;
+				vertical-align: middle;
+				content: "\f158";
+			}
+		}
+	}
+	#aiko-developer-prompt-base-content-text {
+		display: flex;
+		gap: 1em;
+		overflow: hidden;
+		padding: 0;
+		#aiko-developer-prompt-base-list {
+			flex: 1;
+			height: 100%;
+			padding-right: 1em;
+			padding: 1em 1em 0 0;
+			box-sizing: border-box;
+			#aiko-developer-prompt-base-list-inner {
+				height: calc(100% - 2em);
+				.aiko-developer-prompt-base-tabs {
+					display: flex;
+					gap: 10px;
+					margin-bottom: 20px;
+						flex-wrap: wrap;
+					.aiko-developer-prompt-base-tab {
+						padding: 4px 8px;
+						cursor: pointer;
+						background: #f0f0f0;
+						border-radius: 5px;
+						&.aiko-developer-prompt-base-active {
+							background: #007BFF;
+							color: white;
+						}
+						
+					}
+				}
+				#aiko-developer-prompt-base-prompts {
+					overflow: auto;
+					height: calc(100% - 2em);
+				}
+				.aiko-developer-prompt-base-container {
+					border: 1px solid #ccc;
+					padding: 15px;
+					margin-bottom: 10px;
+					border-radius: 5px;
+					transition: all 0.4s ease;
+					cursor: pointer;
+					&.aiko-developer-prompt-base-selected {
+						border-color: #007BFF;
+						background-color: #E6F0FF;
+					}
+					&.aiko-developer-prompt-base-pro-only {
+						opacity: 0.3;
+						&:hover {
+							opacity: 1;
+						}
+					}
+					h3 {
+						margin-bottom: 0.2em;
+					}
+					p {
+						margin: 0;
+						font-size: 12px;
+						strong {
+							display: inline-block;
+							width: 100px;
+						}
+						&.aiko-developer-prompt-base-prompt-model {
+							display: inline-block;
+						}
+						span.aiko-developer-prompt-base-prompt-span-temperature {
+							opacity: 0.7;
+						}
+					}
+					p.aiko-developer-prompt-base-prompt-description {
+						border-bottom: 1px solid #ccc;
+						padding-bottom: 0.5em;
+						margin-bottom: 0.5em;
+						opacity: 0.7;
+					}
+					.aiko-developer-tooltip-container.aiko-developer-prompt-base-prompt-warning {
+						opacity: 0;
+						&:first-of-type { 
+						    /* margin-left: 0.5em; */
+						}
+					}
+					&:hover .aiko-developer-tooltip-container.aiko-developer-prompt-base-prompt-warning {
+						opacity: 1;
+					}
+				}
+			}
+		}
+		#aiko-developer-prompt-base-preview {
+			flex: 1;
+			#aiko-developer-importing-selected-heading {
+				/* border-bottom: 1px solid #ccc; */
+				/* margin-bottom: 0.5em; */
+				/* padding-bottom: 0.5em; */
+			}
+			#aiko-developer-importing-selected-prompt-wrapper {
+				overflow: auto;
+				/* height: calc(76% - 2em); */
+				flex-basis: 100%;
+				padding: 0.5em 0.5em 0.5em 0em;
+			}
+			#aiko-developer-importing-selected {	
+				border: 1px solid #ccc;
+				padding: 15px;
+				border-radius: 5px;
+				background-color: #f9f9f9;
+				margin: 1em 0; 
+				/* overflow: auto; */
+				box-sizing: border-box;
+				height: calc(100% - 2em);
+				display: flex;
+				flex-direction: column;
+			}
+			h3 {
+				margin: 0 0 0.2em;
+			}
+			p {
+				margin: 0;
+				strong {
+					display: inline-block;
+					width: 100px;
+				}
+				span#aiko-developer-importing-selected-temperature {
+					opacity: 0.7;
+				}
+				&.aiko-developer-prompt-base-prompt-model {
+					/* display: inline-block; */
+					border-bottom: 1px solid #ccc;
+					margin-bottom: 0.5em;
+					padding-bottom: 0.5em;
+				}
+			}
+			p#aiko-developer-importing-selected-description {
+				border-bottom: 1px solid #ccc;
+				padding-bottom: 0.5em;
+				/* margin-bottom: 0.5em; */
+				opacity: 0.7;
+			}
+			#aiko-developer-importing-buttons {
+				border-top: 1px solid #ddd;
+				padding-top: 0.75em;
+				/* margin-top: 0.75em; */
+			}
+			p.aiko-developer-importing-selected-prompt-text {
+				strong {
+					width: 100%;
+				}
+			}
+			#aiko-developer-prompt-base-submit {
+				/* margin-top: 1em; */
+			}
+		}
+	}
+}
+
+
+
+
+
 
 /* Lite special */ 
 

@@ -35,7 +35,7 @@ class Aiko_Developer_Render_Lite extends Aiko_Developer_Render_Framework {
 	}
 
 	private function aiko_developer_render_settings_page() {
-		$api_key = get_option( 'aiko_developer_api_key', '' );
+		$api_key = get_option( 'aiko_developer_openai_api_key', '' );
 		?>
 		<div class="wrap">
 			<?php if ( empty( $api_key ) ) { ?>
@@ -46,11 +46,36 @@ class Aiko_Developer_Render_Lite extends Aiko_Developer_Render_Framework {
 			</div>
 			<?php } ?>
 			<form method="post" action="options.php">
-				<h1>AIKO Settings</h1>
+				<h1><?php echo esc_html__( 'AIKO Settings', 'aiko-developer-lite' ); ?></h1>
 				<div id="aiko-developer-buy-full-wrapper" class="aiko-developer-block aiko-developer-buy-full-settings">
 					<h2 id="aiko-developer-buy-full-title"><?php echo esc_html__( 'There is a Pro version of this plugin!', 'aiko-developer-lite' ); ?></h2>
 					<p id="aiko-developer-buy-full-description"><?php echo esc_html__( 'The Pro version of AIKO Developer Lite provides advanced features, such as: temperature settings for all models, easy extension of functional requirements, code review and improvement suggestions, automatic deployment, WordPress Playground testing options (default plugins and themes, import content) and many more. ', 'aiko-developer-lite' ); ?> </p><p id="aiko-developer-buy-full-call-to action"><a href="<?php echo esc_url( 'https://codecanyon.net/item/aiko-instant-plugins-ai-developer/54220020' ); ?>" target="_blank" rel="noopener noreferrer" class="button button-primary"><?php echo esc_html__( 'Buy full version', 'aiko-developer-lite' ); ?></a></p>
 				</div>
+				<h2 class="aiko-developer-settings-on-top"><?php echo esc_html__( 'Platform Settings', 'aiko-developer-lite' ); ?></h2>
+				<p class="description aiko-developer-settings-on-top"><?php echo esc_html__( 'Select the AI model based on your requirements, such as performance, cost, and accuracy.', 'aiko-developer-lite' ); ?></p>
+				<table class="form-table aiko-developer-settings-on-top" role="presentation">
+					<tbody>
+						<tr>
+							<th scope="row"><?php echo esc_html__( 'Platform', 'aiko-developer-lite' ); ?></th>
+							<td>		
+								<div class="aiko-developer-ai-selection">
+									<label>
+										<input type="radio" name="aiko_developer_ai_selection" value="openai" checked="checked">
+										<?php echo esc_html__( 'OpenAI', 'aiko-developer-lite' ); ?>
+									</label>
+									<label>
+										<input type="radio" name="aiko_developer_ai_selection" value="deepseek" disabled>
+										<?php echo esc_html__( 'DeepSeek', 'aiko-developer-lite' ); ?>
+									</label>
+									<label>
+										<input type="radio" name="aiko_developer_ai_selection" value="anthropic" disabled>
+										<?php echo esc_html__( 'Anthropic', 'aiko-developer-lite' ); ?>
+									</label>
+								</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
 				<?php
 				settings_fields( 'aiko_developer_settings' );
 				do_settings_sections( 'aiko_developer_settings' );

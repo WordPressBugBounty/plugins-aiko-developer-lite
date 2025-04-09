@@ -14,14 +14,20 @@ class Aiko_Developer_Core_Framework {
 		if ( 'aiko_developer' === $typenow || 'aiko-developer-home' === $page || 'aiko-developer-settings' === $page ) {
 			wp_enqueue_style( 'aiko-developer-style', plugin_dir_url( __DIR__ ) . 'css/style.css', array(), filemtime( plugin_dir_path( dirname( __DIR__ ) ) . 'framework/css/style.css' ) );
 			wp_enqueue_script( 'aiko-developer-script', plugin_dir_url( dirname( __DIR__ ) ) . 'assets/js/script.js', array( 'jquery' ), filemtime( plugin_dir_path( dirname( __DIR__ ) ) . 'assets/js/script.js' ), true );
+			$ai_selection = get_option( 'aiko_developer_ai_selection', 'openai' );
+			$key = 'aiko_developer_' . $ai_selection . '_api_key';
+			$api_key = get_option( $key, '' ); 
 			wp_localize_script(
 				'aiko-developer-script',
 				'aiko_developer_object',
 				array(
-					'ajax_url'       => admin_url( 'admin-ajax.php' ),
-					'api_key'        => get_option( 'aiko_developer_api_key', '' ),
-					'link'           => admin_url( 'admin.php?page=aiko-developer-settings' ),
-					'pluginMessages' => $this->get_aiko_developer_messages_localize(),
+					'ajax_url'             => admin_url( 'admin-ajax.php' ),
+					'ai_selection'         => $ai_selection,
+					'api_key'              => $api_key,
+					'link'                 => admin_url( 'admin.php?page=aiko-developer-settings' ),
+					'plugin_messages'      => $this->get_aiko_developer_messages_localize(),
+					'selected_model'       => get_option( 'aiko_developer_openai_model', 'gpt-4o' ),
+					'selected_temperature' => get_option( 'aiko_developer_temperature', '0' ),
 				)
 			);
 		}
@@ -131,10 +137,16 @@ class Aiko_Developer_Core_Framework {
 		$messages['notice-comment-not-added']       = esc_html__( 'There are some improvements which are not included in Functional Requirements, so we did it for you. If you accept we will generate the code.', 'aiko-developer-lite' );
 		$messages['confirm-cancel-edit']            = esc_html__( 'Are you sure you want to cancel? Edits will not be saved.', 'aiko-developer-lite' );
 		$messages['confirm-cancel-rephrase']        = esc_html__( 'Are you sure you want to cancel? Rephrased Functional Requirements will not be saved.', 'aiko-developer-lite' );
-		$messages['label-first']                    = esc_html__( 'Functional Requirements', 'aiko-developer-lite' );
-		$messages['label-first-description']        = esc_html__( 'Write your initial idea and technical requirements. We highly recommend using the Rephrase option before publishing.', 'aiko-developer-lite' );
-		$messages['label-after']                    = esc_html__( 'Improvements', 'aiko-developer-lite' );
-		$messages['label-after-description']        = esc_html__( 'If you want to improve the Functional Requirements, write your idea.', 'aiko-developer-lite' );
+		$messages['fr']                             = esc_html__( 'Functional Requirements', 'aiko-developer-lite' );
+		$messages['model-not-matching']				= esc_html__( 'Model does not match the active model.', 'aiko-developer-lite' );
+		$messages['temperature-not-matching']		= esc_html__( 'Temperature does not match the active temperature.', 'aiko-developer-lite' );
+		$messages['tags']                           = esc_html__( 'Tags', 'aiko-developer-lite' );
+		$messages['screenshots']                    = esc_html__( 'Screenshots', 'aiko-developer-lite' );
+		$messages['open-playground']                = esc_html__( 'Open Playground', 'aiko-developer-lite' );
+		$messages['buy-full-title']  			    = esc_html__( 'Additional prompt for import available in PRO!', 'aiko-developer-lite' );
+		$messages['buy-full-description']		    = esc_html__( 'The Pro version of AIKO Developer Lite provides advanced features, such as: temperature settings for all models, easy extension of functional requirements, code review and improvement suggestions, automatic deployment, WordPress Playground testing options (default plugins and themes, import content), more prompts for import and many more.', 'aiko-developer-lite' );
+		$messages['buy-full-button']  			    = esc_html__( 'Buy full version', 'aiko-developer-lite' );
+		$messages['use-this']       			    = esc_html__( 'Use this', 'aiko-developer-lite' );
 		
 		return $messages;
 	}
@@ -182,27 +194,6 @@ class Aiko_Developer_Core_Framework {
 		return $this->aiko_developer_array_flatten( $input );
 	}
 
-	private function aiko_developer_old_model_fallback( $model, $role ) {
-		if ( 'gpt-3.5-turbo' === $model ) {
-			if ( 'developer' === $role ) {
-				update_option( 'aiko_developer_model', 'gpt-4o' );
-				return 'gpt-4o';
-			} elseif ( 'reviewer' === $role ) {
-				update_option( 'aiko_developer_reviewer_model', 'gpt-4o' );
-				return 'gpt-4o';
-			} else {
-				update_option( 'aiko_developer_consultant_model', 'gpt-4o-mini' );
-				return 'gpt-4o-mini';
-			}
-		} else {
-			return $model;
-		}
-	}
-
-	public function get_aiko_developer_old_model_fallback( $model, $role ) {
-		return $this->aiko_developer_old_model_fallback( $model, $role );
-	}
-
 	private function aiko_developer_is_code_not_allowed( $code ) {
 		if ( preg_match_all( '/(base64_decode|error_reporting|ini_set|eval)\s*\(/i', $code, $matches ) ) {
 			if ( count( $matches[0] ) > 5 ) {
@@ -243,5 +234,112 @@ class Aiko_Developer_Core_Framework {
 
 	public function get_aiko_developer_sanitize_array_recursive( $array ) {
 		return $this->aiko_developer_sanitize_array_recursive( $array );
+	}
+
+	private function aiko_developer_maybe_schedule_prompts_update() {
+		if ( ! wp_next_scheduled( 'aiko_developer_prompt_update_cron_event' ) ) {
+			wp_schedule_event( time(), 'daily', 'aiko_developer_prompt_update_cron_event' );
+		}
+	}
+
+	public function get_aiko_developer_maybe_schedule_prompts_update() {
+		$this->aiko_developer_maybe_schedule_prompts_update();
+	}
+
+	private function aiko_developer_prompt_update_cron_event() {
+		$url = 'https://aiko-developer.bold-themes.com/import/prompt_base.json';
+
+		$response = wp_remote_get( $url );
+		if ( is_wp_error( $response ) ) {
+			error_log( 'AIKO Developer: Error fetching JSON - ' . $response->get_error_message() );
+			return;
+		}
+
+		$body = wp_remote_retrieve_body( $response );
+		if ( empty( $body ) ) {
+			error_log( 'AIKO Developer: Received an empty response from ' . $url );
+			return;
+		}
+
+		// Save for current site
+		$upload_dir = wp_upload_dir();
+		$target_dir = trailingslashit( $upload_dir['basedir'] ) . 'aiko-developer';
+
+		if ( ! file_exists( $target_dir ) ) {
+			wp_mkdir_p( $target_dir );
+		}
+
+		$target_file = trailingslashit( $target_dir ) . 'prompts.json';
+
+		$result = file_put_contents( $target_file, $body );
+		if ( false === $result ) {
+			error_log( 'AIKO Developer: Failed to write the JSON to ' . $target_file );
+		}
+
+		// If multisite, update each site's uploads folder
+		if ( is_multisite() && function_exists( 'get_sites' ) ) {
+			$sites = get_sites();
+			foreach ( $sites as $site ) {
+				switch_to_blog( $site->blog_id );
+				$upload_dir = wp_upload_dir();
+				$target_dir = trailingslashit( $upload_dir['basedir'] ) . 'aiko-developer';
+
+				if ( ! file_exists( $target_dir ) ) {
+					wp_mkdir_p( $target_dir );
+				}
+
+				$target_file = trailingslashit( $target_dir ) . 'prompts.json';
+				$result = file_put_contents( $target_file, $body );
+				if ( false === $result ) {
+					error_log( 'AIKO Developer: Failed to write the JSON to ' . $target_file . ' for blog ID ' . $site->blog_id );
+				}
+				restore_current_blog();
+			}
+		}
+	}
+
+	public function get_aiko_developer_prompt_update_cron_event() {
+		$this->aiko_developer_prompt_update_cron_event();
+	}
+
+	private function aiko_developer_new_fields_update() {
+		$updated_flag = get_option( 'aiko_developer_new_fields_updated', false );
+		if ( $updated_flag ) {
+			return;
+		}
+
+		$old_api_key = get_option( 'aiko_developer_api_key', '' );
+		$new_api_key = get_option( 'aiko_developer_openai_api_key', '' );
+		if ( ! empty( $old_api_key ) && empty( $new_api_key ) ) {
+			update_option( 'aiko_developer_openai_api_key', $old_api_key );
+			delete_option( 'aiko_developer_api_key' );
+		}
+
+		$old_model = get_option( 'aiko_developer_model', '' );
+		$new_model = get_option( 'aiko_developer_openai_model', '' );
+		if ( ! empty( $old_model ) && empty( $new_model ) ) {
+			update_option( 'aiko_developer_openai_model', $old_model );
+			delete_option( 'aiko_developer_model' );
+		}
+
+		$old_consultant_model = get_option( 'aiko_developer_consultant_model', '' );
+		$new_consultant_model = get_option( 'aiko_developer_consultant_openai_model', '' );
+		if ( ! empty( $old_consultant_model ) && empty( $new_consultant_model ) ) {
+			update_option( 'aiko_developer_consultant_openai_model', $old_consultant_model );
+			delete_option( 'aiko_developer_consultant_model' );
+		}
+
+		$old_reviewer_model = get_option( 'aiko_developer_reviewer_model', '' );
+		$new_reviewer_model = get_option( 'aiko_developer_reviewer_openai_model', '' );
+		if ( ! empty( $old_reviewer_model ) && empty( $new_reviewer_model ) ) {
+			update_option( 'aiko_developer_reviewer_openai_model', $old_reviewer_model );
+			delete_option( 'aiko_developer_reviewer_model' );
+		}
+
+		update_option( 'aiko_developer_new_fields_updated', true );
+	}
+
+	public function get_aiko_developer_new_fields_update() {
+		$this->aiko_developer_new_fields_update();
 	}
 }

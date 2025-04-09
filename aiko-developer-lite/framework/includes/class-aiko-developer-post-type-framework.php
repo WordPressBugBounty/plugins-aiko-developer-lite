@@ -179,46 +179,46 @@ class Aiko_Developer_Post_Type_Framework {
 
 	private function aiko_developer_register_settings() {
 		add_settings_section(
-			'aiko_developer_section',
-			esc_html__( 'OpenAI API Key', 'aiko-developer-lite' ),
+			'aiko_developer_api_key_section',
+			'',
 			null,
 			'aiko_developer_settings'
 		);
 
 		add_settings_field(
-			'aiko_developer_api_key',
-			esc_html__( 'API Key', 'aiko-developer-lite' ),
-			array( $this->render, 'get_aiko_developer_render_api_key_field' ),
+			'aiko_developer_openai_api_key',
+			esc_html__( 'OpenAI API Key', 'aiko-developer-lite' ),
+			array( $this->render, 'get_aiko_developer_render_openai_api_key_field' ),
 			'aiko_developer_settings',
-			'aiko_developer_section'
+			'aiko_developer_api_key_section'
 		);
 
 		add_settings_section(
-			'aiko_developer_model_section',
+			'aiko_developer_openai_model_section',
 			esc_html__( 'OpenAI Models', 'aiko-developer-lite' ),
-			null,
+			array(  $this->render, 'get_aiko_developer_render_openai_model_description' ),
 			'aiko_developer_settings'
 		);
 
 		add_settings_field(
-			'aiko_developer_model',
+			'aiko_developer_openai_model',
 			esc_html__( 'Developer', 'aiko-developer-lite' ),
-			array( $this->render, 'get_aiko_developer_render_model_field' ),
+			array( $this->render, 'get_aiko_developer_render_openai_model_field' ),
 			'aiko_developer_settings',
-			'aiko_developer_model_section'
+			'aiko_developer_openai_model_section'
 		);
 
 		add_settings_field(
-			'aiko_developer_consultant_model',
+			'aiko_developer_consultant_openai_model',
 			esc_html__( 'Consultant', 'aiko-developer-lite' ),
-			array( $this->render, 'get_aiko_developer_render_consultant_model_field' ),
+			array( $this->render, 'get_aiko_developer_render_consultant_openai_model_field' ),
 			'aiko_developer_settings',
-			'aiko_developer_model_section'
+			'aiko_developer_openai_model_section'
 		);
 
-		register_setting( 'aiko_developer_settings', 'aiko_developer_api_key' );
-		register_setting( 'aiko_developer_settings', 'aiko_developer_model' );
-		register_setting( 'aiko_developer_settings', 'aiko_developer_consultant_model' );
+		register_setting( 'aiko_developer_settings', 'aiko_developer_openai_api_key' );
+		register_setting( 'aiko_developer_settings', 'aiko_developer_openai_model' );
+		register_setting( 'aiko_developer_settings', 'aiko_developer_consultant_openai_model' );
 	}
 
 	public function get_aiko_developer_register_settings() {
@@ -247,6 +247,15 @@ class Aiko_Developer_Post_Type_Framework {
 		if ( ! in_array( '_old_functional_requirements', $revisioned_keys, true ) ) {
 			$revisioned_keys[] = '_old_functional_requirements';
 		}
+		if ( ! in_array( '_used_platform', $revisioned_keys, true ) ) {
+			$revisioned_keys[] = '_used_platform';
+		}
+		if ( ! in_array( '_used_model', $revisioned_keys, true ) ) {
+			$revisioned_keys[] = '_used_model';
+		}
+		if ( ! in_array( '_code_not_generated', $revisioned_keys, true ) ) {
+			$revisioned_keys[] = '_code_not_generated';
+		}
 		return $revisioned_keys;
 	}
 
@@ -255,12 +264,14 @@ class Aiko_Developer_Post_Type_Framework {
 	}
 
 	private function aiko_developer_enable_meta_revision_fields( $fields ) {
-		$fields['_post_slug']                    = esc_html__( 'Post Slug', 'aiko-developer-lite' );
-		$fields['_improvements']                 = esc_html__( 'Improvements', 'aiko-developer-lite' );
-		$fields['_functional_requirements']      = esc_html__( 'Functional Requirements', 'aiko-developer-lite' );
-		$fields['_php_output']                   = esc_html__( 'PHP Output', 'aiko-developer-lite' );
-		$fields['_js_output']                    = esc_html__( 'JS Output', 'aiko-developer-lite' );
-		$fields['_css_output']                   = esc_html__( 'CSS Output', 'aiko-developer-lite' );
+		$fields['_post_slug']               = esc_html__( 'Post Slug', 'aiko-developer-lite' );
+		$fields['_improvements']            = esc_html__( 'Improvements', 'aiko-developer-lite' );
+		$fields['_functional_requirements'] = esc_html__( 'Functional Requirements', 'aiko-developer-lite' );
+		$fields['_php_output']              = esc_html__( 'PHP Output', 'aiko-developer-lite' );
+		$fields['_js_output']               = esc_html__( 'JS Output', 'aiko-developer-lite' );
+		$fields['_css_output']              = esc_html__( 'CSS Output', 'aiko-developer-lite' );
+		$fields['_used_platform']           = esc_html__( 'Used Platform', 'aiko-developer-lite' );
+		$fields['_used_model']              = esc_html__( 'Used Model', 'aiko-developer-lite' );
 		return $fields;
 	}
 
