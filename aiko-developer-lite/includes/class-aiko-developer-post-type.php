@@ -10,6 +10,8 @@ if ( ! class_exists( 'Aiko_Developer_Post_Type_Framework' ) ) {
 require_once plugin_dir_path( __FILE__ ) . 'class-aiko-developer-render.php';
 
 class Aiko_Developer_Post_Type_Lite extends Aiko_Developer_Post_Type_Framework {
+	public $render;
+	
 	public function __construct() {
 		$this->render = new Aiko_Developer_Render_Lite();
 	}

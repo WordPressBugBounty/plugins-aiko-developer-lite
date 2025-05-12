@@ -735,6 +735,14 @@ body.aiko-developer-disabled {
   position: absolute;
   width: 0;
 }
+#aiko-developer-importing-selected .aiko-developer-tooltip-container .aiko-developer-tooltip-text {
+  bottom: -400%;
+}
+#aiko-developer-importing-selected .aiko-developer-tooltip-container .aiko-developer-tooltip-text:after {
+  transform: rotate(180deg);
+  top: -9px;
+  bottom: auto;
+}
 .aiko-developer-tooltip-container.aiko-developer-prompt-base-prompt-warning .aiko-developer-tooltip-text {
   background: red;
 }
@@ -828,6 +836,10 @@ body.aiko-developer-disabled {
 
 form.aiko-developer-settings-hidden {
   display: none;
+}
+
+form.aiko-developer-hidden {
+  display: none !important;
 }
 
 form.aiko-developer-settings-form {

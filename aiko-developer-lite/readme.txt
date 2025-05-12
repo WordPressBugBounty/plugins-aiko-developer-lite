@@ -3,9 +3,9 @@
 Contributors: boldthemes
 Tags: AI, AI WordPress, AI code generator, AI developer, AI programmer
 Requires at least: 5.0
-Tested up to: 6.6
+Tested up to: 6.8
 Requires PHP: 7.0
-Stable tag: 2.0.1
+Stable tag: 2.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -133,6 +133,12 @@ Of course:
 13. Settings page
 
 == Changelog ==
+
+= 2.0.2 =
+
+* Minor bug fixes
+* Support for additional AI models
+* Php 8.4 compatibility improved
 
 = 2.0.1 =
 

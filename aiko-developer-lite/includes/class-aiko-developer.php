@@ -9,6 +9,10 @@ require_once plugin_dir_path( __FILE__ ) . 'class-aiko-developer-core.php';
 require_once plugin_dir_path( __FILE__ ) . 'class-aiko-developer-post-type.php';
 
 class Aiko_Developer_Lite {
+	public $ajax;
+	public $core;
+	public $post_type;
+	
 	public function __construct() {
 		$this->ajax      = new Aiko_Developer_Ajax_Lite();
 		$this->core      = new Aiko_Developer_Core_Lite();
@@ -141,7 +145,7 @@ class Aiko_Developer_Lite {
 								</div>
 								<div class="aiko-developer-generation-error-notice-text-wrapper">
 									<span id="aiko-developer-published-notice-text" data-message="<?php echo esc_attr( $generation[1] ); ?>"></span> 
-									<?php if ( 'error-openai' === $generation[1] ) : ?>
+									<?php if ( 'error-api' === $generation[1] ) : ?>
 										<span id="aiko-developer-confidence-notice-error-text"><?php echo esc_html( $generation[2] ); ?></span>
 									<?php endif; ?>
 								</div>
@@ -163,7 +167,8 @@ class Aiko_Developer_Lite {
 					</p>
 					<div class="aiko-developer-code-actions">
 						<?php
-						$model = get_option( 'aiko_developer_openai_model', 'gpt-4o' );
+						$model = get_option( 'aiko_developer_openai_model', 'o3-mini' );
+						$model = $this->core->get_aiko_developer_o1_preview_fallback( $model, 'developer' );
 						if ( ! empty( $functional_requirements ) ) {
 							?>
 							<div id="aiko-developer-active-model">
@@ -214,7 +219,8 @@ class Aiko_Developer_Lite {
 							<textarea id="aiko-developer-input" name="aiko-developer-input" rows="12" cols="100" placeholder="<?php echo empty( $functional_requirements ) ? esc_html__( 'Please type in your functional requirements', 'aiko-developer-lite' ) : esc_html__( 'Please type in your improvement idea', 'aiko-developer-lite' ); ?>"></textarea>
 							<div class="aiko-developer-code-actions">
 								<?php
-								$model = get_option( 'aiko_developer_openai_model', 'gpt-4o' );
+								$model = get_option( 'aiko_developer_openai_model', 'o3-mini' );
+								$model = $this->core->get_aiko_developer_o1_preview_fallback( $model, 'developer' );
 								if ( empty( $functional_requirements ) ) {
 									?>
 									<div id="aiko-developer-active-model">

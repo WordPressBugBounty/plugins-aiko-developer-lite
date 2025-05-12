@@ -7,6 +7,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 require_once plugin_dir_path( dirname( __DIR__ ) ) . 'includes/class-aiko-developer-core.php';
 
 class Aiko_Developer_Ajax_Framework {
+	public $core;
+	
 	public function __construct() {
 		if ( class_exists( 'Aiko_Developer_Core_Lite' ) ) {
 			$this->core = new Aiko_Developer_Core_Lite();

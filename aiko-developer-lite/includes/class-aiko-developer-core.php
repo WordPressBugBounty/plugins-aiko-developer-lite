@@ -89,8 +89,11 @@ class Aiko_Developer_Core_Lite extends Aiko_Developer_Core_Framework {
 			$url     = 'https://api.openai.com/v1/chat/completions';
 			$api_key = get_option( 'aiko_developer_openai_api_key', '' );
 
-			$model   = get_option( 'aiko_developer_openai_model', 'gpt-4o' );
-			$o1_flag = 'o1-preview' === $model || 'o1-mini' === $model || 'o3-mini' === $model;
+			$model   = get_option( 'aiko_developer_openai_model', 'o3-mini' );
+			$model   = $this->get_aiko_developer_o1_preview_fallback( $model, 'developer' );
+			$o1_flag = 'o1' === $model || 'o1-mini' === $model || 'o3-mini' === $model || 'o3' === $model || 'o4-mini' === $model;
+
+			$o1_mini_flag = 'o1-mini' === $model;
 
 			$post_title = get_the_title( $post_id );
 
@@ -122,14 +125,14 @@ class Aiko_Developer_Core_Lite extends Aiko_Developer_Core_Framework {
 
 			$messages = array(
 				array(
-					'role'    => $o1_flag ? 'user' : 'system',
+					'role'    => $o1_mini_flag ? 'user' : 'system',
 					'content' => $developer_message,
 				),
 			);
 
 			$code_fixer_messages = array( 
 				array(
-					'role'    => $o1_flag ? 'user' : 'system',
+					'role'    => $o1_mini_flag ? 'user' : 'system',
 					'content' => $code_fixer_message,
 				),
 			);
@@ -170,14 +173,14 @@ class Aiko_Developer_Core_Lite extends Aiko_Developer_Core_Framework {
 			$response = wp_remote_post( $url, $args );
 
 			if ( is_wp_error( $response ) ) {
-				update_post_meta( $post_id, '_generation', array( false, 'error-openai-unable-to-connect', '' ) );
+				update_post_meta( $post_id, '_generation', array( false, 'error-unable-to-connect', '' ) );
 				return;
 			} else {
 				$body = wp_remote_retrieve_body( $response );
 				$data = json_decode( $body, true );
 
 				if ( isset( $data['error'] ) ) {
-					update_post_meta( $post_id, '_generation', array( false, 'error-openai', $data['error']['message'] ) );
+					update_post_meta( $post_id, '_generation', array( false, 'error-api', $data['error']['message'] ) );
 					return;
 				} else {
 					$generated_code         = $data['choices'][0]['message']['content'];
@@ -211,14 +214,14 @@ class Aiko_Developer_Core_Lite extends Aiko_Developer_Core_Framework {
 					$code_fixer_response = wp_remote_post( $url, $code_fixer_args );
 
 					if ( is_wp_error( $code_fixer_response ) ) {
-						update_post_meta( $post_id, '_generation', array( false, 'error-openai-unable-to-connect', '' ) );
+						update_post_meta( $post_id, '_generation', array( false, 'error-unable-to-connect', '' ) );
 						return;
 					} else {
 						$code_fixer_body = wp_remote_retrieve_body( $code_fixer_response );
 						$code_fixer_data = json_decode( $code_fixer_body, true );
 		
 						if ( isset( $code_fixer_data['error'] ) ) {
-							update_post_meta( $post_id, '_generation', array( false, 'error-openai', $code_fixer_data['error']['message'] ) );
+							update_post_meta( $post_id, '_generation', array( false, 'error-api', $code_fixer_data['error']['message'] ) );
 							return;
 						} else {
 							$fixed_code         = $code_fixer_data['choices'][0]['message']['content'];

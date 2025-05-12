@@ -26,7 +26,7 @@ class Aiko_Developer_Core_Framework {
 					'api_key'              => $api_key,
 					'link'                 => admin_url( 'admin.php?page=aiko-developer-settings' ),
 					'plugin_messages'      => $this->get_aiko_developer_messages_localize(),
-					'selected_model'       => get_option( 'aiko_developer_openai_model', 'gpt-4o' ),
+					'selected_model'       => get_option( 'aiko_developer_openai_model', 'o3-mini' ),
 					'selected_temperature' => get_option( 'aiko_developer_temperature', '0' ),
 				)
 			);
@@ -105,8 +105,8 @@ class Aiko_Developer_Core_Framework {
 		$messages['error-general']                  = esc_html__( 'Error: There was an error.', 'aiko-developer-lite' );
 		$messages['error-unauthorized-access']      = esc_html__( 'Error: Unauthorized access.', 'aiko-developer-lite' );
 		$messages['error-isset-post']               = esc_html__( 'Error: Invalid data.', 'aiko-developer-lite' );
-		$messages['error-openai-unable-to-connect'] = esc_html__( 'Error: Unable to connect to OpenAI API; please try again.', 'aiko-developer-lite' );
-		$messages['error-openai']                   = esc_html__( 'OpenAI Error: ', 'aiko-developer-lite' );
+		$messages['error-unable-to-connect']        = esc_html__( 'Error: Unable to connect to API; please try again.', 'aiko-developer-lite' );
+		$messages['error-api']                      = esc_html__( 'Error: ', 'aiko-developer-lite' );
 		$messages['error-save-loopback']            = esc_html__( 'Error: We were unable to check for errors, your plugin is not activated or saved. You can try again or download the ZIP and try to activate it manually.', 'aiko-developer-lite' );
 		$messages['error-unable-to-save']           = esc_html__( 'Error: There might be an error in your plugin, it is not activated or saved.', 'aiko-developer-lite' );
 		$messages['error-save-php']                 = esc_html__( 'Error: Plugin could not be activated, there is an error in PHP file.', 'aiko-developer-lite' );
@@ -237,6 +237,11 @@ class Aiko_Developer_Core_Framework {
 	}
 
 	private function aiko_developer_maybe_schedule_prompts_update() {
+		$upload_dir       = wp_upload_dir();
+		$prompt_base_path = trailingslashit( $upload_dir['basedir'] ) . 'aiko-developer/prompts.json';
+		if ( ! file_exists( $prompt_base_path ) ) {
+			wp_clear_scheduled_hook( 'aiko_developer_prompt_update_cron_event' );
+		}
 		if ( ! wp_next_scheduled( 'aiko_developer_prompt_update_cron_event' ) ) {
 			wp_schedule_event( time(), 'daily', 'aiko_developer_prompt_update_cron_event' );
 		}
@@ -341,5 +346,23 @@ class Aiko_Developer_Core_Framework {
 
 	public function get_aiko_developer_new_fields_update() {
 		$this->aiko_developer_new_fields_update();
+	}
+
+	private function aiko_developer_o1_preview_fallback( $model, $role ) {
+		if ( 'o1-preview' === $model ) {
+			return 'o1';
+		} elseif ( 'gpt-4' === $model || 'gpt-4-turbo' === $model ) {
+			if ( 'consultant' === $role ) {
+				return 'gpt-4.1';
+			} else {
+				return 'o3-mini';
+			}
+		} else {
+			return $model;
+		}
+	}
+
+	public function get_aiko_developer_o1_preview_fallback( $model, $role ) {
+		return $this->aiko_developer_o1_preview_fallback( $model, $role );
 	}
 }

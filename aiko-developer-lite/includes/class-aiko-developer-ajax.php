@@ -24,18 +24,21 @@ class Aiko_Developer_Ajax_Lite extends Aiko_Developer_Ajax_Framework {
 
 			$url                    = 'https://api.openai.com/v1/chat/completions';
 			$api_key                = get_option( 'aiko_developer_openai_api_key', '' );
-			$model                  = get_option( 'aiko_developer_consultant_openai_model', 'gpt-4o-mini' );
+			$model                  = get_option( 'aiko_developer_consultant_openai_model', 'gpt-4.1' );
+			$model                  = $this->core->get_aiko_developer_o1_preview_fallback( $model, 'consultant' );
 			$prompts_json           = file_get_contents( plugin_dir_path( __DIR__ ) . 'framework/json/prompts.json' );
 			$prompts                = json_decode( $prompts_json, true );
 			$consultant_message     = $prompts['consultant']['initial'];
 			$post_id                = intval( sanitize_text_field( wp_unslash( $_POST['post_id'] ) ) );
 			$consultant_temperature = floatval( get_option( 'aiko_developer_consultant_temperature', '0.1' ) );
 
-			$o1_flag = 'o1-preview' === $model || 'o1-mini' === $model || 'o3-mini' === $model;
+			$o1_flag = 'o1' === $model || 'o1-mini' === $model || 'o3-mini' === $model || 'o3' === $model || 'o4-mini' === $model;
+			
+			$o1_mini_flag = 'o1-mini' === $model;
 
 			$messages = array(
 				array(
-					'role'    => $o1_flag ? 'user' : 'system',
+					'role'    => $o1_mini_flag ? 'user' : 'system',
 					'content' => $consultant_message,
 				),
 			);
@@ -66,7 +69,7 @@ class Aiko_Developer_Ajax_Lite extends Aiko_Developer_Ajax_Framework {
 			$response = wp_remote_post( $url, $args );
 
 			if ( is_wp_error( $response ) ) {
-				wp_send_json_error( 'error-openai-unable-to-connect' );
+				wp_send_json_error( 'error-unable-to-connect' );
 			} else {
 				$body = wp_remote_retrieve_body( $response );
 				$data = json_decode( $body, true );
@@ -74,7 +77,7 @@ class Aiko_Developer_Ajax_Lite extends Aiko_Developer_Ajax_Framework {
 				if ( isset( $data['error'] ) ) {
 					wp_send_json_error(
 						array(
-							'code'    => 'error-openai',
+							'code'    => 'error-api',
 							'message' => $data['error']['message'],
 						)
 					);
@@ -110,18 +113,21 @@ class Aiko_Developer_Ajax_Lite extends Aiko_Developer_Ajax_Framework {
 
 			$url                    = 'https://api.openai.com/v1/chat/completions';
 			$api_key                = get_option( 'aiko_developer_openai_api_key', '' );
-			$model                  = get_option( 'aiko_developer_consultant_openai_model', 'gpt-4o-mini' );
+			$model                  = get_option( 'aiko_developer_consultant_openai_model', 'gpt-4.1' );
+			$model                  = $this->core->get_aiko_developer_o1_preview_fallback( $model, 'consultant' );
 			$prompts_json           = file_get_contents( plugin_dir_path( __DIR__ ) . 'framework/json/prompts.json' );
 			$prompts                = json_decode( $prompts_json, true );
 			$consultant_message     = $prompts['consultant']['initial'];
 			$post_id                = intval( sanitize_text_field( wp_unslash( $_POST['post_id'] ) ) );
 			$consultant_temperature = floatval( get_option( 'aiko_developer_consultant_temperature', '0.1' ) ); 
 
-			$o1_flag = 'o1-preview' === $model || 'o1-mini' === $model || 'o3-mini' === $model;
+			$o1_flag = 'o1' === $model || 'o1-mini' === $model || 'o3-mini' === $model || 'o3' === $model || 'o4-mini' === $model;
+
+			$o1_mini_flag = 'o1-mini' === $model;
 
 			$messages = array(
 				array(
-					'role'    => $o1_flag ? 'user' : 'system',
+					'role'    => $o1_mini_flag ? 'user' : 'system',
 					'content' => $consultant_message,
 				),
 			);
@@ -152,7 +158,7 @@ class Aiko_Developer_Ajax_Lite extends Aiko_Developer_Ajax_Framework {
 			$response = wp_remote_post( $url, $args );
 
 			if ( is_wp_error( $response ) ) {
-				wp_send_json_error( 'error-openai-unable-to-connect' );
+				wp_send_json_error( 'error-unable-to-connect' );
 			} else {
 				$body = wp_remote_retrieve_body( $response );
 				$data = json_decode( $body, true );
@@ -160,7 +166,7 @@ class Aiko_Developer_Ajax_Lite extends Aiko_Developer_Ajax_Framework {
 				if ( isset( $data['error'] ) ) {
 					wp_send_json_error(
 						array(
-							'code'    => 'error-openai',
+							'code'    => 'error-api',
 							'message' => $data['error']['message'],
 						)
 					);

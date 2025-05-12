@@ -7,6 +7,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 require_once plugin_dir_path( dirname( __DIR__ ) ) . 'includes/class-aiko-developer-core.php';
 
 class Aiko_Developer_Render_Framework {
+	public $core;
+	
 	public function __construct() {
 		if ( class_exists( 'Aiko_Developer_Core_Lite' ) ) {
 			$this->core = new Aiko_Developer_Core_Lite();
@@ -87,7 +89,7 @@ class Aiko_Developer_Render_Framework {
 				</div>
 			</div>
 			<?php } ?>
-			<form method="post" class="aiko-developer-settings-form" action="options.php">
+			<form method="post" class="aiko-developer-settings-form aiko-developer-hidden" action="options.php">
 				<h1 class="aiko-developer-settings-on-top"><?php echo esc_html__( 'AIKO Settings', 'aiko-developer-lite' ); ?></h1>
 				<?php
 				settings_fields( 'aiko_developer_settings' );
@@ -128,13 +130,16 @@ class Aiko_Developer_Render_Framework {
 
 	private function aiko_developer_openai_model_array() {
 		$models = array(
-			'o1-preview'    => 'o1-preview (usage limits apply)',
-			'o1-mini'       => 'o1-mini (usage limits apply)',
-			'o3-mini'       => 'o3-mini',
-			'gpt-4o'        => 'gpt-4o',
-			'gpt-4o-mini'   => 'gpt-4o-mini',
-			'gpt-4'         => 'gpt-4',
-			'gpt-4-turbo'   => 'gpt-4-turbo',
+			'o4-mini'      => 'o4-mini',
+			'o3'           => 'o3',
+			'o3-mini'      => 'o3-mini',
+			'o1'           => 'o1',
+			'o1-mini'      => 'o1-mini',
+			'gpt-4.1'      => 'gpt-4.1',
+			'gpt-4.1-mini' => 'gpt-4.1-mini',
+			'gpt-4.1-nano' => 'gpt-4.1-nano',
+			'gpt-4o'       => 'gpt-4o',
+			'gpt-4o-mini'  => 'gpt-4o-mini',
 		);
 		return $models;
 	}
@@ -144,7 +149,8 @@ class Aiko_Developer_Render_Framework {
 	}
 
 	private function aiko_developer_render_openai_model_field() {
-		$model   = get_option( 'aiko_developer_openai_model', 'gpt-4o' );
+		$model   = get_option( 'aiko_developer_openai_model', 'o3-mini' );
+		$model   = $this->core->get_aiko_developer_o1_preview_fallback( $model, 'developer' );
 		$options = $this->get_aiko_developer_openai_model_array();
 		?>
 		<select name="aiko_developer_openai_model" class="regular-text">
@@ -164,7 +170,7 @@ class Aiko_Developer_Render_Framework {
 	}
 
 	private function aiko_developer_render_consultant_openai_model_field() {
-		$consultant_model = get_option( 'aiko_developer_consultant_openai_model', 'gpt-4o-mini' );
+		$consultant_model = get_option( 'aiko_developer_consultant_openai_model', 'gpt-4.1' );
 		$options          = $this->get_aiko_developer_openai_model_array();
 		?>
 		<select name="aiko_developer_consultant_openai_model" class="regular-text">
