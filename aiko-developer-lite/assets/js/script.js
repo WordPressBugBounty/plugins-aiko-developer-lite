@@ -8,6 +8,106 @@ jQuery( document ).ready( function( $ ) { "use strict";
 	const messages = aiko_developer_object.plugin_messages;
 	const selectedModel = aiko_developer_object.selected_model;
 
+	// Corner box
+	$( '.aiko-developer-corner-box-close' ).on( 'click', function() {
+		$( '.aiko-developer-corner-box' ).fadeOut();
+		document.cookie = "aiko_developer_corner_box_dont_show=true; max-age=" + (10 * 24 * 60 * 60) + "; path=/";
+	});
+
+	var corner_box_dont_show_cookie = document.cookie
+		.split('; ')
+		.find(row => row.startsWith('aiko_developer_corner_box_dont_show='))
+		?.split('=')[1] || '';
+
+	if ( $( '#aiko-developer-first' ).val() !== '1' ) {
+		if ( corner_box_dont_show_cookie === 'true' ) {
+			$( '.aiko-developer-corner-box' ).css( 'display', 'none' );
+		} else {
+			$( '.aiko-developer-corner-box' ).css( 'display', 'block' );
+		}
+	}
+
+	const cornerBoxObserver = new MutationObserver(() => {
+		if ( $( '#aiko-developer-first' ).val() !== '1' && $( '#aiko-developer-submitted' ).val() !== '1' ) {
+			if ( corner_box_dont_show_cookie === 'true' ) {
+				$( '.aiko-developer-corner-box' ).css( 'display', 'none' );
+			} else {
+				if ($('body').hasClass('aiko-developer-disabled')) {
+					$('.aiko-developer-corner-box').fadeOut();
+				} else {
+					$('.aiko-developer-corner-box').fadeIn();
+				}
+			}
+		}
+	});
+	cornerBoxObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
+	const loaderObserver = new MutationObserver(() => {
+        if ( $( '.aiko-developer-popup' ).is( ':visible' ) ) {
+            $( 'body' ).addClass( 'aiko-developer-disabled' );
+        } else {
+            $( 'body' ).removeClass( 'aiko-developer-disabled' );
+        }
+    });
+
+    const observeConfig = { attributes: true, attributeFilter: ['style', 'class'], subtree: false };
+
+    $( '.aiko-developer-popup' ).each( function () {
+        const popup = $( this )[0];
+        loaderObserver.observe( popup, observeConfig );
+    });
+
+	$( '.aiko-developer-corner-box-button, #aiko-developer-submit-a-prompt-meta-box' ).on( 'click', function() {
+		event.preventDefault();
+		$( '#aiko-developer-submit-prompt-popup-overlay' ).fadeIn();
+	});
+
+	$( '#aiko-developer-submit-prompt-popup-submit' ).on( 'click', function() {
+		event.preventDefault();
+
+		$( '#aiko-developer-submit-prompt-popup-overlay' ).fadeOut();
+		$( '#aiko-developer-loader-overlay' ).fadeIn();
+
+		var fr = $( '#aiko-developer-submit-prompt-fr-val' ).text().trim();
+		var ai = $( '#aiko-developer-submit-prompt-ai-val' ).text().trim();
+		var model = $( '#aiko-developer-submit-prompt-model-val' ).text().trim();
+		var temp = $( '#aiko-developer-submit-prompt-temp-val' ).text().trim();
+		var comment = $( '#aiko-developer-submit-prompt-comment-val' ).val().trim();
+		var anonymous = $( '#aiko-developer-submit-prompt-accept-val' ).is( ':checked' ) ? '1' : '0';
+
+		$.ajax({
+			url: ajaxUrl,
+			type: 'POST',
+			data: {
+				action: 'submit_prompt_send',
+				nonce: $( '#aiko_developer_nonce_field' ).val(),
+				functional_requirements: revert_text( fr ),
+				ai: ai,
+				model: model,
+				temperature: temp,
+				comment: comment,
+				post_id: postID,
+				anonymous: anonymous
+			},
+			success: function( response ) {
+				$( '#aiko-developer-loader-overlay' ).fadeOut();
+				$( '#aiko-developer-alert-popup-overlay' ).fadeIn();
+				$( '#aiko-developer-alert-text' ).text( aiko_developer_get_message( response.data ) );
+				$( '#aiko-developer-alert-ok' ).attr( 'data-action', response.data );
+				$( '#aiko-developer-submit-prompt-comment-val' ).val( '' );
+				$( '#aiko-developer-submit-prompt-accept-val' ).prop('checked', false);
+				$( '#aiko-developer-submitted' ).val( '1' );
+			}
+		});
+	});
+
+	$( '#aiko-developer-submit-prompt-popup-close' ).on( 'click', function() {
+		event.preventDefault();
+		$( '#aiko-developer-submit-prompt-popup-overlay' ).fadeOut();
+		$( '#aiko-developer-submit-prompt-comment-val' ).val( '' );
+		$( '#aiko-developer-submit-prompt-accept-val' ).prop('checked', false);
+	});
+
 	function aiko_developer_code_not_generated() {
 		var code_not_generated = $( '#aiko-developer-after-title' ).data( 'code-not-generated' );
 		if ( $( '#aiko-developer-first' ).val() !== '1' ) {

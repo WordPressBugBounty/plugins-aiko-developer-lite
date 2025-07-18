@@ -53,7 +53,7 @@
 
 @keyframes aiko-developer-blink {
    0% 		{ opacity: 1; transform: scale(1); }
-   50% 		{ opacity: 0.5; transform: scale(1.1); }
+   50% 		{ opacity: 0.8; transform: scale(1.02); }
    100% 	{ opacity: 1; transform: scale(1); }
 }
 
@@ -1098,6 +1098,118 @@ form.aiko-developer-settings-form {
 	}
 }
 
+/* Share prompt popup */
+
+.aiko-developer-corner-box {
+    position: fixed;
+    bottom: 10px;
+    right: 30px;
+    z-index: 9999;
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    box-shadow: -2px -2px 8px rgba(0, 0, 0, 0.3);
+    padding: 1em;
+    display: none;
+    width: 250px;		
+	.aiko-developer-corner-box-content {
+		.aiko-developer-corner-box-top {
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+			.aiko-developer-corner-box-headline {
+				font-size: 1.2em;
+				font-weight: 600;
+				margin: 0;
+			}
+
+			.aiko-developer-corner-box-text {
+				font-size: 1em;
+				color: #23282d;
+				margin: 0;
+			}
+
+			.aiko-developer-corner-box-button {
+				background-color: #853aff;
+			}
+		}
+		.aiko-developer-corner-box-close {
+			margin: 0;
+			position: absolute;
+			top: 12px;
+			right: 10px;
+			&:before {
+				cursor: pointer;
+				font: normal 20px / 1 dashicons;
+				content: "\f335";
+				text-align: center;
+				color: #444;
+				opacity: 0.5;
+			}	
+			&:hover:before {
+				opacity: 1;
+			}
+		}
+	}
+}
+#aiko-developer-submit-prompt-popup-overlay {
+	.aiko-developer-popup-content {
+		height: auto;
+		max-height: 85%;
+		overflow-x: auto;
+	}
+	.aiko-developer-popup-content-info {
+		background: #f3f3f3;
+		border: 1px solid #c3c4c7;
+		border-left-width: 4px;
+		border-left-color: #853aff;
+		box-shadow: 0 1px 1px rgba(0, 0, 0, .04);
+		padding: 12px 12px;	
+	}
+	.aiko-developer-popup-content-text {
+		border-top: none;
+		margin-top: 0;
+		padding-top: 0;
+		h4 {
+			margin-bottom: 1em !important; 
+		}
+	}
+	.aiko-developer-submit-prompt-popup-content-data-basic {
+		display: flex;
+		gap: 1em;
+		p {
+			margin: 0;
+		}
+	}
+	.aiko-developer-submit-prompt-popup-content-data {
+		display: flex;
+		gap: 1em;
+		p {
+			margin: 0;
+		}
+	}
+
+	.aiko-developer-submit-prompt-popup-content-prompt {
+		margin-top: 1em;
+		border-top: 1px solid rgba(0, 0, 0, 0.3);
+		margin-bottom: 1em;
+		border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+			max-height: 19em;
+			overflow-y: scroll;
+		#aiko-developer-submit-prompt-fr {
+			margin: 1em 0;
+		}
+		#aiko-developer-submit-prompt-fr-val {
+			margin: 1em 0;
+		}
+	}
+
+	.aiko-developer-submit-prompt-popup-content-comment {
+		p {
+			margin: 0;	
+		}
+	}
+}
 
 
 

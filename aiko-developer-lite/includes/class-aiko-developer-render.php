@@ -26,6 +26,13 @@ class Aiko_Developer_Render_Lite extends Aiko_Developer_Render_Framework {
 					<div class="aiko-developer-tooltip-text"><?php echo esc_html__( 'Download the zip and manually install the plugin.', 'aiko-developer-lite' ); ?></div>
 				</div>
 			</div>
+			<div class="aiko-developer-button-container">
+				<button class="button button-secondary button-large" id="aiko-developer-submit-a-prompt-meta-box"><?php echo esc_html__( 'Share this plugin', 'aiko-developer-lite' ); ?></button>
+				<span class="aiko-developer-tooltip-container aiko-developer-tooltip-arrow-right">
+					<i class="dashicons dashicons-info aiko-developer-download-info" aria-hidden="true"></i>
+					<span class="aiko-developer-tooltip-text"><?php echo esc_html__( 'If you want to help us you can send us this prompt.', 'aiko-developer-lite' ); ?></span>
+				</span>
+			</div>
 		</div>
 		<?php
 	}

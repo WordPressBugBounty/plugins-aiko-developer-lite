@@ -168,4 +168,74 @@ class Aiko_Developer_Ajax_Framework {
 		}
 		wp_die();
 	}
+
+	public function aiko_developer_handle_submit_prompt_send() {
+		if ( isset( $_POST['functional_requirements'], $_POST['ai'], $_POST['model'], $_POST['temperature'], $_POST['comment'], $_POST['post_id'] ) ) {
+			if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'aiko_developer_nonce' )
+			|| ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) ) {
+				wp_send_json_error( 'error-unauthorized-access' );
+				wp_die();
+			}
+
+			if ( ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) || ! $this->core->get_aiko_developer_is_user_admin() ) {
+				wp_send_json_error( 'error-unauthorized-access' );
+				wp_die();
+			}
+
+			$post_id = intval( sanitize_text_field( wp_unslash( $_POST['post_id'] ) ) );
+			$title = get_the_title( $post_id );
+
+			$functional_requirements = sanitize_textarea_field( wp_unslash( $_POST['functional_requirements'] ) );
+			$ai_selection = sanitize_text_field( wp_unslash( $_POST['ai'] ) );
+			$model = sanitize_text_field( wp_unslash( $_POST['model'] ) );
+			$temperature = floatval( sanitize_text_field( wp_unslash( $_POST['temperature'] ) ) );
+			$comment = sanitize_textarea_field( wp_unslash( $_POST['comment'] ) );
+
+
+			$anonymous = intval( $_POST['anonymous'] ?? 0 );
+			if ( 1 === $anonymous ) {
+				$user_email = '';
+				$display_name = '';
+			} else {
+				$current_user = wp_get_current_user();
+				if ( ! $current_user || 0 === $current_user->ID ) {
+					$user_email = '';
+					$display_name = '';
+				} else {
+					$user_email   = $current_user->user_email;
+					$display_name = $current_user->display_name;
+				}
+			}
+
+			$response = wp_remote_post( 'https://aiko-developer.bold-themes.com/wp-json/aiko-developer-api/v1/save-string/', array(
+				'headers' => [
+                'Content-Type' => 'text/plain',
+				],
+				'body' => array(
+					'user_display_name' => $display_name,
+					'user_email' => $user_email,
+					'title' => $title,
+					'ai_selection' => $ai_selection,
+					'model' => $model,
+					'temperature' => $temperature,
+					'functional_requirements' => $functional_requirements,
+					'comment' => $comment,
+				),
+				'timeout' => 120,
+			) );
+		
+			if ( is_wp_error( $response ) ) {
+				wp_send_json_error( 'submit-prompt-error' ); 
+			} else {
+				if ( wp_remote_retrieve_response_code( $response ) === 200 ) {
+					wp_send_json_success( 'submit-prompt-success' );
+				} else {
+					wp_send_json_error( 'submit-prompt-error' );
+				}
+			}
+		} else {
+			wp_send_json_error( 'error-isset-post' );
+		}
+		wp_die();
+	}
 }

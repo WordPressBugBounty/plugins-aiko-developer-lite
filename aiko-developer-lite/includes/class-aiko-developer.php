@@ -49,6 +49,8 @@ class Aiko_Developer_Lite {
 
 		add_action( 'wp_ajax_undo_rephrase', array( $this->ajax, 'aiko_developer_handle_undo_rephrase' ) );
 
+		add_action( 'wp_ajax_submit_prompt_send', array( $this->ajax, 'aiko_developer_handle_submit_prompt_send' ) );
+
 		add_action( 'init', array( $this->core, 'get_aiko_developer_maybe_schedule_prompts_update' ) );
 		add_action( 'aiko_developer_prompt_update_cron_event', array( $this->core, 'get_aiko_developer_prompt_update_cron_event' ) );
 
@@ -266,7 +268,7 @@ class Aiko_Developer_Lite {
 				<?php wp_nonce_field( 'aiko_developer_nonce', 'aiko_developer_nonce_field' ); ?>
 
 				<div id="aiko-developer-popups-and-overlays">
-					<div id="aiko-developer-loader-overlay">
+					<div id="aiko-developer-loader-overlay" class="aiko-developer-popup">
 						<div id="aiko-developer-loader-container">
 							<p id="aiko-developer-loader-text"><?php echo esc_html__( 'Don\'t refresh the page', 'aiko-developer-lite' ); ?></p>
 							<div id="aiko-developer-loader"></div>
@@ -501,6 +503,66 @@ class Aiko_Developer_Lite {
 						<?php
 					}
 					?>
+
+					<div class="aiko-developer-corner-box">
+						<div class="aiko-developer-corner-box-content">
+							<div class="aiko-developer-corner-box-close"></div>
+							<div class="aiko-developer-corner-box-top">
+								<h4 class="aiko-developer-corner-box-headline"><?php echo esc_html__( 'Want to help other AIKO users?', 'aiko-developer-lite' ); ?></h4>
+								<p class="aiko-developer-corner-box-text"><?php echo esc_html__( 'If you believe your prompt is well-crafted and that AIKO has generated a quality plugin from it, you can submit it to the Bold Themes team. After review, we may include it in the prompt import list for others to use. ', 'aiko-developer-lite' ); ?></p>
+								<button class="button button-primary button-large aiko-developer-corner-box-button"><?php echo esc_html__( 'Share this plugin', 'aiko-developer-lite' ); ?></button>
+							</div>
+							<input type="hidden" id="aiko-developer-submitted" value="0">
+						</div>
+					</div>
+
+					<div id="aiko-developer-submit-prompt-popup-overlay" class="aiko-developer-popup-overlay aiko-developer-popup-confirm aiko-developer-popup">
+						<div id="aiko-developer-submit-prompt-popup-content" class="aiko-developer-popup-content">
+							<h3><?php echo esc_html__( 'Share prompt with other users', 'aiko-developer-lite' ); ?></h3>
+							<p class="aiko-developer-popup-content-info">
+								<?php echo esc_html__( 'By submitting this form, you will send the prompt displayed on the screen, along with other visible data, to Bold Themes. After review and testing, the prompt may be added to the list of useful prompts available for import by all other AIKO Developer users.', 'aiko-developer-lite' ); ?>
+							</p>
+							<div id="aiko-developer-submit-prompt-popup-content-text" class="aiko-developer-popup-content-text">
+								<h4><?php echo esc_html__( 'Data which will be sent to us:', 'aiko-developer-lite' ); ?></h4>
+								<div class="aiko-developer-submit-prompt-popup-content-data-basic">
+									
+									<p>
+										<b><?php echo esc_html__( 'Title:', 'aiko-developer-lite' ); ?></b>
+										<span id="aiko-developer-submit-prompt-title-val"><?php echo esc_html( $post->post_title ); ?></span>
+									</p>
+									<p>
+										<b><?php echo esc_html__( 'User details: ', 'aiko-developer-lite' ); ?></b>
+										<span><?php echo esc_html__( 'User display name & email (for communication only)', 'aiko-developer-lite' ); ?><span>
+									</p>								
+								</div>
+								<div class="aiko-developer-submit-prompt-popup-content-data">
+									<p id="aiko-developer-submit-prompt-ai"><b><?php echo esc_html__( 'Platform Selection:', 'aiko-developer-lite' ); ?></b> <span id="aiko-developer-submit-prompt-ai-val"><?php echo esc_html__( 'OpenAI', 'aiko-developer-lite' ); ?></span></p>
+									<p id="aiko-developer-submit-prompt-model"><b><?php echo esc_html__( 'Model:', 'aiko-developer-lite' ); ?></b> <span id="aiko-developer-submit-prompt-model-val"><?php echo esc_html( $model ); ?></span></p>
+									<p id="aiko-developer-submit-prompt-temp"><b><?php echo esc_html__( 'Temperature:', 'aiko-developer-lite' ); ?></b> <span id="aiko-developer-submit-prompt-temp-val"><?php echo esc_html( '0' ); ?></span></p>
+								</div>
+								<div class="aiko-developer-submit-prompt-popup-content-prompt">
+
+									<p id="aiko-developer-submit-prompt-fr"><b><?php echo esc_html__( 'Functional Requirements:', 'aiko-developer-lite' ); ?></b> </p>
+									<p id="aiko-developer-submit-prompt-fr-val"><?php echo nl2br( esc_html( $functional_requirements ) ); ?></p>
+								</div>
+								<div class="aiko-developer-submit-prompt-popup-content-comment">
+									<p>
+										<label for="aiko-developer-submit-prompt-comment-val"><?php echo esc_html__( 'Comment:', 'aiko-developer-lite' ); ?></label><br>
+										<textarea id="aiko-developer-submit-prompt-comment-val" name="aiko-developer-submit-prompt-comment-val" rows="3" cols="80" placeholder="<?php echo esc_attr__( 'Add a comment (optional)', 'aiko-developer-lite' ); ?>"></textarea>
+									</p>
+									<p>
+										<label>
+											<input name="aiko-developer-submit-prompt-accept-val" type="checkbox" id="aiko-developer-submit-prompt-accept-val"><?php echo esc_html__( 'Please do not share my username or email address. I prefer to remain anonymous.', 'aiko-developer-lite' ); ?>
+										</label>
+									</p>
+								</div>
+							</div>
+							<div id="aiko-developer-alert-popup-content-buttons" class="aiko-developer-popup-content-buttons">
+								<button id="aiko-developer-submit-prompt-popup-submit" class="button button-primary button-large"><?php echo esc_html__( 'Submit', 'aiko-developer-lite' ); ?></button>
+								<button id="aiko-developer-submit-prompt-popup-close" class="button button-secondary button-large"><?php echo esc_html__( 'Close', 'aiko-developer-lite' ); ?></button>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 			<?php
